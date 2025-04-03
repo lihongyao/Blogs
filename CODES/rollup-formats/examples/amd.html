@@ -1,33 +1,29 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AMD</title>
+    <!-- 1. 引入.requirejs -->
+    <script src="./requirejs.js"></script>
+    <!-- 2. 定义全局依赖 -->
+    <script>
+      window.requirejs.config({
+        paths: {
+          lodash: "https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.min",
+        },
+      });
+    </script>
+    <!-- 3. 定义模块 -->
+    <script src="../dist/amd/bundle.js"></script>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AMD</title>
-  <!-- 1. 引入.requirejs -->
-  <script src="./requirejs.js"></script>
-  <!-- 2. 定义全局依赖 -->
-  <script>
-    window.requirejs.config({
-      paths: {
-        "lodash": "https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.min"
-      }
-    });
-  </script>
-  <!-- 3. 定义模块 -->
-  <script src="../dist/amd/bundle.js"></script>
-</head>
-
-<body>
-  <!-- 4. 消费模块 -->
-  <script>
-    window.requirejs(
-      ["Test"], function (test) {
-        test.printAnswer()
-      }
-    )
-  </script>
-</body>
-
+  <body>
+    <!-- 4. 消费模块 -->
+    <script>
+      window.requirejs(["Test"], function (test) {
+        test.printAnswer();
+      });
+    </script>
+  </body>
 </html>

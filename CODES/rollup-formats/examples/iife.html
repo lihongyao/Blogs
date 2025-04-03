@@ -1,27 +1,19 @@
-<!--
- * @Author: Lee
- * @Date: 2023-08-10 20:27:58
- * @LastEditors: Lee
- * @LastEditTime: 2023-08-10 20:36:05
- * @Description: 
--->
 <!DOCTYPE html>
 <html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IIFE</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script>
+      window.lodash = window._;
+    </script>
+    <script src="../dist/iife/bundle.js"></script>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IIFE</title>
-  <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
-  <script>window.lodash = window._</script>
-  <script src="../dist/iife/bundle.js"></script>
-</head>
-
-<body>
-
-  <script>
-    window.Test.printAnswer()
-  </script>
-</body>
-
+  <body>
+    <script>
+      window.Test.printAnswer();
+    </script>
+  </body>
 </html>
