@@ -1,80 +1,76 @@
-<!--
- * @Author: Lee
- * @Date: 2023-08-26 20:37:40
- * @LastEditors: Lee
- * @LastEditTime: 2023-08-27 13:58:32
- * @Description: 
--->
-
 <!DOCTYPE html>
 <html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project 1</title>
+    <style lang="">
+      canvas {
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+      }
+    </style>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Project 1</title>
-  <style lang="">
-    canvas {
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-    }
-  </style>
-</head>
+  <body>
+    <header style="margin-bottom: 16px">
+      <h3>🖥 父窗口</h3>
+      <input type="text" style="height: 19px" placeholder="Enter message" />
+      <button type="button" class="send">发送消息</button>
+      <p>来自子窗口的消息：<span id="message"></span></p>
+    </header>
+    <canvas width="100vw" height="100vh"></canvas>
+    <iframe allowfullscreen src="http://localhost:5501/index.html?id=1"></iframe>
 
-<body>
-  <header style="margin-bottom: 16px;">
-    <h3>🖥 父窗口</h3>
-    <input type="text" style="height: 19px;" placeholder="Enter message" />
-    <button type="button" class="send">发送消息</button>
-    <p>来自子窗口的消息：<span id="message"></span></p>
+    <script>
+      const ifr = document.querySelector("iframe");
+      const sendBtn = document.querySelector("button.send");
+      const msgInput = document.querySelector("input");
+      const msgSpan = document.querySelector("#message");
 
-  </header>
-  <canvas width="100vw" height="100vh"></canvas>
-  <iframe allowfullscreen src="http://localhost:5501/index.html?id=1"></iframe>
+      // 1. 发送消息给子窗口
+      sendBtn.addEventListener(
+        "click",
+        function () {
+          const postData = msgInput.value;
+          ifr.contentWindow.postMessage(postData, "*");
+        },
+        false
+      );
 
-  <script>
+      // 2. 接收子窗口发送的消息
+      window.addEventListener(
+        "message",
+        function (message) {
+          msgSpan.textContent = JSON.stringify(message.data);
+        },
+        false
+      );
 
-    const ifr = document.querySelector("iframe");
-    const sendBtn = document.querySelector("button.send");
-    const msgInput = document.querySelector("input")
-    const msgSpan = document.querySelector("#message");
+      // 3. 切换全屏
+      function toggleFullscreen() {
+        var doc = window.document;
+        var docEl = doc.documentElement;
 
-    // 1. 发送消息给子窗口
-    sendBtn.addEventListener("click", function () {
-      const postData = msgInput.value;
-      ifr.contentWindow.postMessage(postData, '*');
-    }, false);
-    // 2. 接收子窗口发送的消息
-    window.addEventListener('message', function (message) {
-      msgSpan.textContent = message.data;
-    }, false);
+        var requestFullscreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+        var exitFullscreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
 
-    // 3. 切换全屏
-
-    function toggleFullscreen() {
-      var doc = window.document;
-      var docEl = doc.documentElement;
-
-      var requestFullscreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
-      var exitFullscreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
-
-      if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
-        // 进入全屏模式
-        if (requestFullscreen) {
-          requestFullscreen.call(docEl);
-        }
-      } else {
-        // 退出全屏模式
-        if (exitFullscreen) {
-          exitFullscreen.call(doc);
+        if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+          // 进入全屏模式
+          if (requestFullscreen) {
+            requestFullscreen.call(docEl);
+          }
+        } else {
+          // 退出全屏模式
+          if (exitFullscreen) {
+            exitFullscreen.call(doc);
+          }
         }
       }
-    }
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>
