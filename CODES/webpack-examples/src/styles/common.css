@@ -1,0 +1,15 @@
+@font-face {
+  font-family: "DIN-Regular";
+  src: url("../fonts/din-regular.otf");
+}
+body {
+  text-align: center;
+}
+h1 {
+  transition: all 0.3s;
+  user-select: none;
+}
+
+h2 {
+  font-family: "DIN-Regular";
+}

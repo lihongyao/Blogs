@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- 定义常量值 BASE_URL 需通过 DefinePlugin 定义 -->
-  <link rel="shortcut icon" href="<%= BASE_URL %>favicon.ico" type="image/x-icon">
-  <!-- 动态获取网页标题 -->
-  <title>
-    <%= htmlWebpackPlugin.options.title %>
-  </title>
-</head>
-
-<body>
-  <div id="root"></div>
-</body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 定义常量值 BASE_URL 需通过 DefinePlugin 定义 -->
+    <link rel="shortcut icon" href="<%= BASE_URL %>favicon.ico" type="image/x-icon" />
+    <!-- 动态获取网页标题 -->
+    <title><%= htmlWebpackPlugin.options.title %></title>
+  </head>
+  <body>
+    <div id="root">
+      <div style="text-align: center">
+        <img src="/images/02.png" width="50" />
+      </div>
+      <div class="bg-box"></div>
+      <h2>01234567890</h2>
+    </div>
+  </body>
 </html>
