@@ -1,0 +1,23 @@
+/* 主题1：默认主题 */
+:root {
+  --bg-color: #eeeeee;
+  --text-color: #000000;
+}
+
+/* 主题2:暗黑 */
+[data-theme="dark"] {
+  --bg-color: #222222;
+  --text-color: #ffffff;
+}
+
+/* 主题3：浅色 */
+[data-theme="light"] {
+  --bg-color: #eeeeee;
+  --text-color: #000000;
+}
+
+/* 主题4：绿色 */
+[data-theme="green"] {
+  --bg-color: #00ff00;
+  --text-color: #333333;
+}

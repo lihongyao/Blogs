@@ -1,0 +1,15 @@
+body {
+  text-align: center;
+  padding-top: 100px;
+}
+
+.desc {
+  display: inline-block;
+  padding: 4px 16px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+button.active {
+  background-color: cornflowerblue;
+}
