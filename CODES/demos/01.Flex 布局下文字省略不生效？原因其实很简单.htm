@@ -1,10 +1,9 @@
-```html
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>弹性布局下自适应宽度溢出省略</title>
+    <title>Flex 布局下文字省略不生效？原因其实很简单</title>
     <style>
       * {
         margin: 0;
@@ -31,7 +30,7 @@
         display: flex;
         gap: 8px;
         align-items: center;
-        min-width: 0; /* ⭐关键：允许内部内容收缩 */
+        min-width: 0; /* ✅ 关键：允许内部文字被压缩 */
       }
 
       .self {
@@ -42,13 +41,14 @@
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-        min-width: 0; /* ⭐关键：允许文本真正截断 */
       }
+
       .live {
         padding: 4px 16px;
         background: cornflowerblue;
         border-radius: 6px;
         color: white;
+        flex-shrink: 0;
       }
     </style>
   </head>
@@ -62,6 +62,3 @@
     </div>
   </body>
 </html>
-
-```
-

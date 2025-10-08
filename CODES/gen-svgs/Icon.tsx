@@ -1,13 +1,6 @@
 import { LRUCache } from "lru-cache";
 
-import {
-  type JSX,
-  Show,
-  createEffect,
-  createMemo,
-  createSignal,
-  on,
-} from "solid-js";
+import { type JSX, Show, createEffect, createMemo, createSignal, on } from "solid-js";
 
 import { SVG_PATH_NAMES } from "./svgPath_all";
 
@@ -32,25 +25,14 @@ type IconProps = {
   onClick?: (e: MouseEvent | KeyboardEvent) => void;
 };
 
-const colorAttrs = [
-  "fill",
-  "stroke",
-  "stop-color",
-  "flood-color",
-  "lighting-color",
-  "color",
-];
+const colorAttrs = ["fill", "stroke", "stop-color", "flood-color", "lighting-color", "color"];
 
 // 需要保留的颜色值
 const preserveColors = ["none", "transparent", "inherit", "currentColor"];
 
 function shouldPreserve(color: string) {
   const trimmedColor = color.trim().toLowerCase();
-  return (
-    preserveColors.includes(trimmedColor) ||
-    trimmedColor.startsWith("url(") ||
-    trimmedColor === ""
-  );
+  return preserveColors.includes(trimmedColor) || trimmedColor.startsWith("url(") || trimmedColor === "";
 }
 
 function replaceColor(match: string, color: string) {
@@ -61,26 +43,18 @@ function replaceColor(match: string, color: string) {
 // 统一替换属性颜色
 function replaceColorsInAttr(svgText: string, attr: string) {
   const regex = new RegExp(`${attr}=(["']?)([^"'>\\s]+)\\1`, "g");
-  return svgText.replace(regex, (match, quote, color) =>
-    replaceColor(match, color),
-  );
+  return svgText.replace(regex, (match, quote, color) => replaceColor(match, color));
 }
 
 // 替换 CSS 内颜色
 function replaceColorsInCss(cssText: string) {
-  const cssColorRegex =
-    /(fill|stroke|stop-color|flood-color|lighting-color|color)\s*:\s*([^;}\s]+)/g;
-  return cssText.replace(cssColorRegex, (match, prop, color) =>
-    replaceColor(match, color.trim()),
-  );
+  const cssColorRegex = /(fill|stroke|stop-color|flood-color|lighting-color|color)\s*:\s*([^;}\s]+)/g;
+  return cssText.replace(cssColorRegex, (match, prop, color) => replaceColor(match, color.trim()));
 }
 
 // 移除 SVG 宽高属性
 function removeSvgDimensions(svgText: string) {
-  return svgText.replace(
-    /(<svg[^>]*?)\s*(width|height)=["'][^"']*["']/gi,
-    "$1",
-  );
+  return svgText.replace(/(<svg[^>]*?)\s*(width|height)=["'][^"']*["']/gi, "$1");
 }
 
 // 检查是否为颜色相关的 CSS 类
@@ -122,9 +96,7 @@ function extractSizeClasses(className?: string): string {
     /\bsize-[^\s]+/g, // size-6
   ];
 
-  const matches = sizePatterns.flatMap(
-    (pattern) => className.match(pattern) || [],
-  );
+  const matches = sizePatterns.flatMap((pattern) => className.match(pattern) || []);
 
   return matches.join(" ");
 }
@@ -141,8 +113,7 @@ export default function Icon(props: IconProps) {
   // 判断颜色设置策略
   const colorStrategy = createMemo(() => {
     const hasColorProp = !!props.color;
-    const hasColorClass =
-      props.class && /text-|fill-|stroke-/.test(props.class);
+    const hasColorClass = props.class && /text-|fill-|stroke-/.test(props.class);
 
     if (hasColorProp && props.color?.startsWith("text-")) {
       // color prop 是 CSS 类
@@ -163,8 +134,7 @@ export default function Icon(props: IconProps) {
     let processedSvg = svgText;
 
     // 只在有明确的颜色设置时才替换颜色
-    const shouldReplaceColors =
-      props.color || (props.class && hasColorClass(props.class));
+    const shouldReplaceColors = props.color || (props.class && hasColorClass(props.class));
 
     if (shouldReplaceColors) {
       // 无论什么情况都进行颜色替换，让 SVG 使用 currentColor
@@ -174,20 +144,14 @@ export default function Icon(props: IconProps) {
       });
 
       // 替换 style 属性内颜色
-      const styleRegex =
-        /(fill|stroke|stop-color|flood-color|lighting-color|color)\s*:\s*([^;}"'\s]+)/g;
-      processedSvg = processedSvg.replace(styleRegex, (match) =>
-        replaceColorsInCss(match),
-      );
+      const styleRegex = /(fill|stroke|stop-color|flood-color|lighting-color|color)\s*:\s*([^;}"'\s]+)/g;
+      processedSvg = processedSvg.replace(styleRegex, (match) => replaceColorsInCss(match));
 
       // 替换 <style> 标签内的 CSS 颜色
       const cssStyleRegex = /<style[^>]*>([\s\S]*?)<\/style>/g;
-      processedSvg = processedSvg.replace(
-        cssStyleRegex,
-        (match, cssContent) => {
-          return match.replace(cssContent, replaceColorsInCss(cssContent));
-        },
-      );
+      processedSvg = processedSvg.replace(cssStyleRegex, (match, cssContent) => {
+        return match.replace(cssContent, replaceColorsInCss(cssContent));
+      });
     }
 
     // 移除 width 和 height
@@ -199,25 +163,15 @@ export default function Icon(props: IconProps) {
     }
 
     // 判断是否有显式尺寸
-    const hasExplicitSize =
-      hasSizeClass(props.class) ||
-      (props.style && (props.style.width || props.style.height));
+    const hasExplicitSize = hasSizeClass(props.class) || (props.style && (props.style.width || props.style.height));
 
     if (hasExplicitSize) {
-      processedSvg = processedSvg.replace(
-        "<svg",
-        '<svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet"',
-      );
+      processedSvg = processedSvg.replace("<svg", '<svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet"');
     } else {
       // 保持原始尺寸
-      const originalWidth = processedSvg.match(/width="([^"]*)"/) ||
-        processedSvg.match(/width='([^']*)'/) || ["", "24"];
-      const originalHeight = processedSvg.match(/height="([^"]*)"/) ||
-        processedSvg.match(/height='([^']*)'/) || ["", "24"];
-      processedSvg = processedSvg.replace(
-        "<svg",
-        `<svg width="${originalWidth[1]}" height="${originalHeight[1]}"`,
-      );
+      const originalWidth = processedSvg.match(/width="([^"]*)"/) || processedSvg.match(/width='([^']*)'/) || ["", "24"];
+      const originalHeight = processedSvg.match(/height="([^"]*)"/) || processedSvg.match(/height='([^']*)'/) || ["", "24"];
+      processedSvg = processedSvg.replace("<svg", `<svg width="${originalWidth[1]}" height="${originalHeight[1]}"`);
     }
 
     return processedSvg;
@@ -245,8 +199,7 @@ export default function Icon(props: IconProps) {
 
       // 创建加载Promise
       const loadPromise = fetch(path).then(async (response) => {
-        if (!response.ok)
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         return await response.text();
       });
 
@@ -275,8 +228,8 @@ export default function Icon(props: IconProps) {
           setLoaded(false);
           loadSvg().then(() => setLoaded(true));
         }
-      },
-    ),
+      }
+    )
   );
 
   const finalStyle = createMemo(() => {
@@ -327,10 +280,7 @@ export default function Icon(props: IconProps) {
   };
 
   return (
-    <Show
-      when={!error()}
-      fallback={props.fallback ?? <span class="text-general-warning">⚠</span>}
-    >
+    <Show when={!error()} fallback={props.fallback ?? <span class="text-general-warning">⚠</span>}>
       <div class={wrapperClass()} onClick={handleClick}>
         <div
           id={props.name}
