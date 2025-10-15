@@ -8,11 +8,13 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "gen:svg": "node scripts/generate_svg.ts"
+    "gen-svg": "npx tsx scripts/gen-svg-list.ts",
+    "gen-svg-watch": "npx tsx scripts/gen-svg-list.ts --watch"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
     "clsx": "^2.1.1",
+    "dompurify": "^3.2.7",
     "lru-cache": "^11.2.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -25,6 +27,8 @@
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
+    "chalk": "^5.6.2",
+    "chokidar": "^4.0.3",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
