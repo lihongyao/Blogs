@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>渐变透明</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        height: 100vh;
+        background: #13181e;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+      }
+
+      /* 1. 镂空渐变边框 */
+      .hollow-border-container {
+        position: relative;
+        background: linear-gradient(45deg, red, blue);
+        /* background-color: red; */
+        /* background-color: blue; */
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .hollow-border {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: inherit;
+
+        /* 边框渐变通过 background + mask 实现 */
+        background: linear-gradient(90deg, rgba(255, 255, 0, 0.6), rgba(255, 0, 150, 0.6));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: destination-out; /* Safari */
+        mask-composite: exclude; /* 其他现代浏览器 */
+        mask-mode: alpha;
+
+        padding: 2px; /* 边框厚度 */
+        box-sizing: border-box;
+      }
+      .hollow-border-content {
+        position: relative;
+        z-index: 1;
+        padding: 16px 50px;
+        color: white;
+      }
+
+      /* 渐变透明 */
+      .list {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        border-radius: 8px;
+        padding: 10px 16px;
+        background: #1e2328;
+        border: 1px solid transparent;
+        flex-shrink: 0;
+        color: white;
+      }
+      .item.selected,
+      .item:hover {
+        border-color: rgba(156, 255, 51, 0.2);
+        background: linear-gradient(180deg, rgba(156, 255, 51, 0.04), rgba(26, 255, 0, 0.2)) border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 2. 镂空渐变边框 -->
+    <div class="hollow-border-container">
+      <div class="hollow-border-content">123</div>
+      <div class="hollow-border"></div>
+    </div>
+
+    <!-- 透明边框 -->
+    <div class="list">
+      <div class="item selected">
+        <img width="22" height="22" src="./images/2.webp" alt="" />
+        <span>Lobby</span>
+      </div>
+      <div class="item">
+        <img width="22" height="22" src="./images/1.webp" alt="" />
+        <span>Casual Games</span>
+      </div>
+      <div class="item">
+        <img width="22" height="22" src="./images/3.webp" alt="" />
+        <span>Original</span>
+      </div>
+      <div class="item">
+        <img width="22" height="22" src="./images/4.webp" alt="" />
+        <span>Slots</span>
+      </div>
+    </div>
+  </body>
+</html>
