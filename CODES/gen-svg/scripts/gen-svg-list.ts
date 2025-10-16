@@ -11,7 +11,7 @@
  *  "gen-svg-watch": "npx tsx scripts/gen-svg-list.ts --watch"
  *
  * 依赖：
- *   pnpm add chokidar chalk --save-dev
+ *   pnpm add chokidar chalk prettier --save-dev
  */
 import fs from "node:fs/promises";
 import fssync from "node:fs";
@@ -25,7 +25,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ==================== 路径配置 ====================
-/** 项目根目录，假设脚本在 gen-svg 目录下 */
+/** 项目根目录 */
 const projectRoot = path.resolve(__dirname, "..");
 /** SVG 图标目录 */
 const ICONS_DIR = path.join(projectRoot, "public", "icons");
