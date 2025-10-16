@@ -1,5 +1,5 @@
 {
-  "name": "gen-svg",
+  "name": "svg-examples",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,9 +13,6 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
-    "clsx": "^2.1.1",
-    "dompurify": "^3.2.7",
-    "lru-cache": "^11.2.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tailwindcss": "^4.1.14"
@@ -23,7 +20,6 @@
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@types/node": "^24.6.0",
-    "@types/prettier": "^3.0.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
@@ -36,11 +32,6 @@
     "prettier": "^3.6.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
-    "vite": "npm:rolldown-vite@7.1.14"
-  },
-  "pnpm": {
-    "overrides": {
-      "vite": "npm:rolldown-vite@7.1.14"
-    }
+    "vite": "^7.1.7"
   }
 }

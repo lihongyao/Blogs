@@ -74,6 +74,7 @@ async function generate(showLog = true): Promise<void> {
   const output = `
 // ⚠️ 此文件由脚本自动生成，请勿手动修改
 // 生成时间: ${timestamp}
+
 export const SVG_PATH_NAMES = [
   ${svgNames.map((n) => `"${n}"`).join(",\n  ")}
 ] as const;

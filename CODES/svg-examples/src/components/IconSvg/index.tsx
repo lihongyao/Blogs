@@ -97,7 +97,10 @@ function extractSvgColor({ color, className, style }: Pick<IconProps, "color" | 
   // 1️⃣ 优先使用显式 props
   if (style?.fill) result.fill = style.fill;
   if (style?.stroke) result.stroke = style.stroke;
-  if (color) result.fill = color;
+  if (color || style?.color) {
+    result.fill = color || style?.color;
+    result.stroke = color || style?.color;
+  }
 
   // 2️⃣ TailwindCSS 类名解析
   if (className) {
@@ -148,16 +151,17 @@ function processSvg(svgText: string, props: Pick<IconProps, "color" | "className
   }
 
   // 4️⃣ 颜色处理
-  const { fill, stroke } = extractSvgColor(props);
+  // 判断全局是否已有 fill 或 stroke 属性
+  // const hasColorAttr = /\s(fill|stroke)=["'][^"']*["']/.test(svgText);
+  // if (!hasColorAttr) {
+  //   // 给 <svg> 标签加上默认颜色属性
+  //   svgText = svgText.replace(/<svg\b([^>]*)>/, `<svg$1 fill="currentColor" stroke="currentColor">`);
+  // }
 
-  if (!fill && !stroke) {
-    // 若无显式颜色，默认加 fill="currentColor"
-    svgText = svgText.replace("<path", '<path fill="currentColor"');
-  } else {
+  const { fill, stroke } = extractSvgColor(props);
+  if (fill || stroke) {
     svgText = applySvgColors(svgText, { fill, stroke });
   }
-
-  console.log(svgText);
   return svgText;
 }
 
@@ -187,6 +191,7 @@ export default function Icon({ name, wrapperClass, className, color, style, size
 
       try {
         const res = await fetch(iconPath, { signal: controllerRef.current.signal });
+        console.log(`请求图标：${name}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const text = await res.text();
         cacheSet(iconPath, text);
@@ -210,17 +215,30 @@ export default function Icon({ name, wrapperClass, className, color, style, size
 
   /** 计算最终样式 */
   const finalStyle = useMemo(() => {
-    const baseStyle: CSSProperties = {
-      display: "inline-block",
-      lineHeight: "0",
-      flexShrink: "0",
+    const _style: CSSProperties = {
       ...(size ? { width: size, height: size } : {}),
+      ...(color ? { color } : {}),
       ...(style ? style : {}),
     };
-    return baseStyle;
-  }, [style, size]);
+    return _style;
+  }, [style, size, color]);
 
-  if (error) return <>{fallback ?? <span className="text-general-warning">⚠</span>}</>;
+  if (error)
+    return (
+      <>
+        {fallback ?? (
+          <span
+            className="text-general-warning"
+            style={{
+              color: "red",
+              fontSize: 16,
+            }}
+          >
+            ⚠
+          </span>
+        )}
+      </>
+    );
 
   return (
     <div className={wrapperClass} onClick={onClick}>
