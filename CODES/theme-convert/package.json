@@ -1,0 +1,14 @@
+{
+  "name": "theme-convert",
+  "version": "1.0.0",
+  "description": "",
+  "main": "convert-css-vars.js",
+  "scripts": {
+    "convert": "node convert-css-vars.js",
+    "convert:tw": "node convert-css-vars.js --tw"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module"
+}

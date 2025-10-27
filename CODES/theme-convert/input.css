@@ -1,0 +1,38 @@
+/* Activity - mode1 */
+:root {
+  --背景1_bg1: #ffffffff;
+  --背景2_bg2: #cd4100ff;
+  --背景3_bg3: #e46808ff;
+  --背景4_bg4: #f5f5f5ff;
+  --背景5_bg5: #e6e6e6ff;
+  --背景6_bg6: #d7d7d7ff;
+  --透明80_black-tmd80: #000000cc;
+  --透明40_black-tmd40: #00000066;
+  --透明80_white-tmd80: #ffffffcc;
+  --透明70_white-tmd70: #ffffffb2;
+  --透明35_white-tmd35: #ffffff59;
+  --透明30_white-tmd30: #ffffff4d;
+  --透明20_white-tmd20: #ffffff33;
+  --透明5_white-tmd5: #ffffff0d;
+  --透明0_white-tmd0: #ffffff00;
+  --字1_text1: #ffe3ceff;
+  --字2_text2: #d21919ff;
+  --字3_text3: #000000ff;
+  --字4_text4: #404040ff;
+  --字5_text5: #ff3b06ff;
+  --字6_text6: #da5310ff;
+  --按钮文字_text-btn: #ffffffff;
+  --强调文字_text-highlight: #ffffffff;
+  --卡片1底上_card1-up: #fff1eaff;
+  --卡片1底下_card1-down: #ffbc9cff;
+  --卡片2底上_card2-up: #ffebcfff;
+  --卡片2底下_card2-down: #ffd37bff;
+  --描边1_bd1: #0000000d;
+  --卡片描边上_card-bd-up: #ff3c07ff;
+  --卡片描边上_card-bd-down: #d21919ff;
+  --主按钮_primary-btn: #ff3a05ff;
+  --置灰按钮_disable-btn: #b3b3b3ff;
+  --按钮描边1_btn-bd1: #ff4647ff;
+  --按钮描边1_btn-bd2: #fff9f1ff;
+  --阴影1_shadow1: #ffffffff;
+}
