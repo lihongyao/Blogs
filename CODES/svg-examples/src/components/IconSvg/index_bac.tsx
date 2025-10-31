@@ -1,0 +1,262 @@
+import React, { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { SVG_PATH_NAMES } from "./svgPath_all";
+
+// ==================== 类型定义 ====================
+export type SvgPathTypes = (typeof SVG_PATH_NAMES)[number];
+export interface IconProps {
+  /** SVG 文件名（不含后缀） */
+  name: SvgPathTypes;
+  /** 应用于 <svg> 容器 div 的类名（Tailwind 或自定义类） */
+  className?: string;
+  /** 图标主色，可为颜色值 / Tailwind 类名（fill-xxx / stroke-xxx）/ CSS 变量 */
+  color?: string;
+  /** 图标尺寸，可为数字或字符串（如 20 / '1.5rem'） */
+  size?: number | string;
+  /** 内联样式 */
+  style?: React.CSSProperties;
+  /** 最外层 div 的类名 */
+  wrapperClass?: string;
+  /** 加载或解析异常时的占位符 */
+  fallback?: React.ReactNode;
+  /** 点击事件 */
+  onClick?: () => void;
+}
+
+// ====================  缓存逻辑  ====================
+const MAX_CACHE_SIZE = 200;
+const svgCache = new Map<string, string>();
+function cacheSet(key: string, value: string) {
+  if (svgCache.has(key)) svgCache.delete(key);
+  svgCache.set(key, value);
+  if (svgCache.size > MAX_CACHE_SIZE) {
+    const firstKey = svgCache.keys().next().value;
+    if (typeof firstKey === "string") {
+      svgCache.delete(firstKey);
+    }
+  }
+}
+
+// ====================  工具函数  ====================
+/** 保留这些颜色（不替换为 currentColor） */
+const preserveColors = ["none", "transparent", "inherit", "currentcolor"];
+function shouldPreserve(color: string) {
+  const c = (color || "").trim().toLowerCase();
+  return c === "" || preserveColors.includes(c) || c.startsWith("url(");
+}
+
+/** 检查 className 是否包含尺寸类（w-, h-, size-, min/max-w/h-） */
+function hasSizeClass(className?: string): boolean {
+  if (!className) return false;
+  return /\b(?:w|h|size|(?:min|max)-(?:w|h))-/.test(className);
+}
+/**
+ * 清理 SVG：
+ * - 去除危险标签与事件属性
+ * - 去除 width/height/xml 声明
+ * - 转换 JSX 兼容属性（如 class → className）
+ */
+function sanitizeSvg(svgText: string): string {
+  if (!svgText) return "";
+
+  return (
+    svgText
+      // 移除 script / foreignObject
+      .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+      .replace(/<foreignObject[\s\S]*?>[\s\S]*?<\/foreignObject>/gi, "")
+      // 移除事件属性与 js 协议
+      .replace(/\son\w+="[^"]*"/gi, "")
+      .replace(/\son\w+='[^']*'/gi, "")
+      .replace(/javascript:[^"']*/gi, "")
+      .replace(/<!ENTITY[\s\S]*?>/gi, "")
+      // 移除 XML 声明和 DOCTYPE
+      .replace(/<\?xml[\s\S]*?\?>/gi, "")
+      .replace(/<!DOCTYPE[\s\S]*?>/gi, "")
+      // 去除 width / height / 其他无意义属性
+      .replace(/\s+(width|height|t|p-id|version)\s*=\s*(["'][^"']*["']|\S+)/gi, "")
+      // JSX 属性名转换
+      .replace(/\bclass=/gi, "className=")
+      .replace(/\bclip-rule=/gi, "clipRule=")
+      .replace(/\bfill-rule=/gi, "fillRule=")
+      .replace(/\bstroke-width=/gi, "strokeWidth=")
+      .replace(/\bstroke-linecap=/gi, "strokeLinecap=")
+      .replace(/\bstroke-linejoin=/gi, "strokeLinejoin=")
+      // —— 新增：删除空、无大小的 clipPath ——
+      // 删除 <clipPath> 定义中，若其子 <rect> 或其他形状没有 width/height 或都为 0 的情况
+      .replace(/<clipPath[\s\S]*?<\/clipPath>/gi, (match) => {
+        // 检查是否包含 <rect> 或 <path> 等且 width/height 或 d 属性为空/零
+        const hasValidShape = /<(?:rect|path|circle|ellipse|polygon|use)[\s\S]*?(?:width\s*=\s*["']\s*\d+\s*["']|height\s*=\s*["']\s*\d+\s*["']|d\s*=\s*["'][^"']+["'])/i.test(match);
+        return hasValidShape ? match : ""; // 如果没有有效形状就删掉这个 clipPath
+      })
+      // 同理，如果 <defs> 中只剩下空的 clipPath 或 mask 等，也可以删掉整个 defs 节点
+      .replace(/<defs>[\s\S]*?<\/defs>/gi, (match) => {
+        // 如果 defs 内只剩空白或已删掉的 clipPath，则去掉整个 defs
+        const inner = match.replace(/<\/?defs>/gi, "");
+        const nonWhitespace = inner.replace(/\s+/g, "");
+        return nonWhitespace === "" ? "" : match;
+      })
+      // 清理多余空格
+      .replace(/\s{2,}/g, " ")
+      .trim()
+  );
+}
+
+// ====================  颜色处理  ====================
+/** 从 props 中提取 SVG 的 fill / stroke 颜色 */
+function extractSvgColor({ color, className, style }: Pick<IconProps, "color" | "className" | "style">): {
+  fill?: string;
+  stroke?: string;
+} {
+  const result: { fill?: string; stroke?: string } = {};
+
+  // 1️⃣ 优先使用显式 props
+  if (style?.fill) result.fill = style.fill;
+  if (style?.stroke) result.stroke = style.stroke;
+  if (color || style?.color) {
+    result.fill = color || style?.color;
+    result.stroke = color || style?.color;
+  }
+
+  // 2️⃣ TailwindCSS 类名解析
+  if (className) {
+    const fillMatch = className.match(/\bfill-([a-zA-Z0-9-_]+)/);
+    const strokeMatch = className.match(/\bstroke-([a-zA-Z0-9-_]+)/);
+    if (fillMatch) result.fill = `var(--${fillMatch[0]})`;
+    if (strokeMatch) result.stroke = `var(--${strokeMatch[0]})`;
+  }
+
+  return result;
+}
+
+/** 替换 SVG 内部 fill/stroke 颜色 */
+function applySvgColors(svg: string, { fill, stroke }: { fill?: string; stroke?: string }): string {
+  if (!svg) return svg;
+
+  if (fill) {
+    svg = svg.replace(/\bfill\s*=\s*(['"]?)([^"'\s>]+)\1/gi, (m, _q, color) => (shouldPreserve(color) ? m : `fill="${fill}"`));
+    svg = svg.replace(/<path(?![^>]*fill=)/gi, `<path fill="${fill}"`);
+  }
+
+  if (stroke) {
+    svg = svg.replace(/\bstroke\s*=\s*(['"]?)([^"'\s>]+)\1/gi, (m, _q, color) => (shouldPreserve(color) ? m : `stroke="${stroke}"`));
+    svg = svg.replace(/<path(?![^>]*stroke=)/gi, `<path stroke="${stroke}"`);
+  }
+
+  return svg;
+}
+
+// ====================  SVG 主处理函数  ====================
+/** 整合 SVG 处理：清理 + 尺寸 + 颜色 */
+function processSvg(svgText: string, props: Pick<IconProps, "color" | "className" | "style" | "size">): string {
+  // 1️⃣ 清理
+  svgText = sanitizeSvg(svgText);
+
+  // 2️⃣ 确保存在 viewBox
+  if (!svgText.includes("viewBox=")) {
+    svgText = svgText.replace("<svg", '<svg viewBox="0 0 16 16"');
+  }
+
+  // 3️⃣ 若存在显式尺寸类 / props，则让 SVG 自适应外层容器
+  const hasExplicitSize = hasSizeClass(props.className) || props.size || (props.style && (props.style.width || props.style.height));
+  if (hasExplicitSize) {
+    svgText = svgText.replace("<svg", '<svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet"');
+  } else {
+    // 没有显式尺寸，给一个默认尺寸，比如 16x16
+    svgText = svgText.replace("<svg", '<svg width="16" height="16" preserveAspectRatio="xMidYMid meet"');
+  }
+
+  // 4️⃣ 颜色处理
+  // 判断全局是否已有 fill 或 stroke 属性
+  // const hasColorAttr = /\s(fill|stroke)=["'][^"']*["']/.test(svgText);
+  // if (!hasColorAttr) {
+  //   // 给 <svg> 标签加上默认颜色属性
+  //   svgText = svgText.replace(/<svg\b([^>]*)>/, `<svg$1 fill="currentColor" stroke="currentColor">`);
+  // }
+
+  const { fill, stroke } = extractSvgColor(props);
+  if (fill || stroke) {
+    svgText = applySvgColors(svgText, { fill, stroke });
+  }
+  return svgText;
+}
+
+// ====================  组件主体部分     ====================
+export default function Icon({ name, wrapperClass, className, color, style, size, fallback, onClick }: IconProps) {
+  const [svgContent, setSvgContent] = useState<string>("");
+  const [error, setError] = useState(false);
+  const controllerRef = useRef<AbortController | null>(null);
+
+  const iconPath = `/icons/${name}.svg`;
+
+  useEffect(() => {
+    if (!SVG_PATH_NAMES.includes(name)) {
+      setError(true);
+      return;
+    }
+
+    const loadSvg = async () => {
+      controllerRef.current?.abort();
+      controllerRef.current = new AbortController();
+
+      if (svgCache.has(iconPath)) {
+        // ✅ 缓存命中，不重新请求
+        setSvgContent(svgCache.get(iconPath)!);
+        return;
+      }
+
+      try {
+        const res = await fetch(iconPath, { signal: controllerRef.current.signal });
+        console.log(`请求图标：${name}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        cacheSet(iconPath, text);
+        setSvgContent(text);
+      } catch (e) {
+        if (!(e instanceof DOMException && e.name === "AbortError")) {
+          console.warn("❌ SVG load failed:", iconPath, e);
+          setError(true);
+        }
+      }
+    };
+
+    loadSvg();
+    return () => controllerRef.current?.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name]);
+
+  const processedSvg = useMemo(() => {
+    return processSvg(svgContent, { color, className, style, size });
+  }, [svgContent, color, className, style, size]);
+
+  /** 计算最终样式 */
+  const finalStyle = useMemo(() => {
+    const _style: CSSProperties = {
+      ...(size ? { width: size, height: size } : {}),
+      ...(color ? { color } : {}),
+      ...(style ? style : {}),
+    };
+    return _style;
+  }, [style, size, color]);
+
+  if (error)
+    return (
+      <>
+        {fallback ?? (
+          <span
+            className="text-general-warning"
+            style={{
+              color: "red",
+              fontSize: 16,
+            }}
+          >
+            ⚠
+          </span>
+        )}
+      </>
+    );
+
+  return (
+    <div className={wrapperClass} onClick={onClick}>
+      <div id={name} className={className} style={finalStyle} dangerouslySetInnerHTML={{ __html: processedSvg }} />
+    </div>
+  );
+}

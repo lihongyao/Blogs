@@ -1,0 +1,8 @@
+{
+  "title": "i18n 学习指南",
+  "profile": {
+    "tips": "会员已到期，请充值",
+    "reward1": "恭喜您，获得 {point} 个积分",
+    "reward2": "恭喜您，获得 <tag>{point}</tag> 积分"
+  }
+}

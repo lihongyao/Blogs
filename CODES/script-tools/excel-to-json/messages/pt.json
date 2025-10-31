@@ -1,0 +1,8 @@
+{
+  "title": "Guia de Estudo de i18n",
+  "profile": {
+    "tips": "A associação expirou, por favor renove.",
+    "reward1": "Parabéns! Você ganhou {point} pontos.",
+    "reward2": "Parabéns! Você ganhou <tag>{point}</tag> pontos."
+  }
+}

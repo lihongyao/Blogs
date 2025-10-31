@@ -1,0 +1,8 @@
+{
+  "title": "i18n Study Guide",
+  "profile": {
+    "tips": "Membership has expired, please renew.",
+    "reward1": "Congratulations! You’ve earned {point} points.",
+    "reward2": "Congratulations! You’ve earned <tag>{point}</tag> points."
+  }
+}

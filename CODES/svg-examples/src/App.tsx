@@ -1,12 +1,19 @@
 import IconSvg from "./components/IconSvg";
 export default function App() {
+  // return (
+  //   <div className="p-20 flex flex-col justify-center items-center gap-6">
+  //     <IconSvg name="wx" color="#ff0000" />
+  //   </div>
+  // );
   return (
     <div className="p-20 flex flex-col justify-center items-center gap-6">
       {/* 默认 */}
       <div className="flex items-center gap-4">
         <IconSvg name="wx" />
         <IconSvg name="profile/wx" />
-        <IconSvg name="profile/error" />
+        <IconSvg name="dollar" className="fill-blue-500 stroke-orange-600" />
+        <IconSvg name="checkbox_checked" className="fill-blue-500 stroke-orange-600" />
+        <IconSvg name="checkbox_unchecked" className="fill-blue-500 stroke-orange-600" />
       </div>
       {/* 尺寸 */}
       <div className="flex items-center gap-4">

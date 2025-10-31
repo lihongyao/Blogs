@@ -3,6 +3,7 @@ import { SVG_PATH_NAMES } from "./svgPath_all";
 
 // ==================== 类型定义 ====================
 export type SvgPathTypes = (typeof SVG_PATH_NAMES)[number];
+
 export interface IconProps {
   /** SVG 文件名（不含后缀） */
   name: SvgPathTypes;
@@ -10,6 +11,13 @@ export interface IconProps {
   className?: string;
   /** 图标主色，可为颜色值 / Tailwind 类名（fill-xxx / stroke-xxx）/ CSS 变量 */
   color?: string;
+  /** 针对子项颜色映射，可按 selector 指定 fill/stroke */
+  subColors?: {
+    [selector: string]: {
+      fill?: string;
+      stroke?: string;
+    };
+  };
   /** 图标尺寸，可为数字或字符串（如 20 / '1.5rem'） */
   size?: number | string;
   /** 内联样式 */
@@ -22,7 +30,7 @@ export interface IconProps {
   onClick?: () => void;
 }
 
-// ====================  缓存逻辑  ====================
+// ==================== 缓存逻辑 ====================
 const MAX_CACHE_SIZE = 200;
 const svgCache = new Map<string, string>();
 function cacheSet(key: string, value: string) {
@@ -36,103 +44,170 @@ function cacheSet(key: string, value: string) {
   }
 }
 
-// ====================  工具函数  ====================
-/** 保留这些颜色（不替换为 currentColor） */
+// ==================== 工具 & 颜色处理 ====================
 const preserveColors = ["none", "transparent", "inherit", "currentcolor"];
-function shouldPreserve(color: string) {
+function shouldPreserve(color: string): boolean {
   const c = (color || "").trim().toLowerCase();
   return c === "" || preserveColors.includes(c) || c.startsWith("url(");
 }
 
-/** 检查 className 是否包含尺寸类（w-, h-, size-, min/max-w/h-） */
 function hasSizeClass(className?: string): boolean {
   if (!className) return false;
   return /\b(?:w|h|size|(?:min|max)-(?:w|h))-/.test(className);
 }
-/**
- * 清理 SVG：
- * - 去除危险标签与事件属性
- * - 去除 width/height/xml 声明
- * - 转换 JSX 兼容属性（如 class → className）
- */
+
+/** 清理 SVG：危险标签、事件属性、宽高声明、JSX 属性名转换、空裁剪定义处理 */
 function sanitizeSvg(svgText: string): string {
   if (!svgText) return "";
 
-  return (
-    svgText
-      // 移除 script / foreignObject
-      .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
-      .replace(/<foreignObject[\s\S]*?>[\s\S]*?<\/foreignObject>/gi, "")
-      // 移除事件属性与 js 协议
-      .replace(/\son\w+="[^"]*"/gi, "")
-      .replace(/\son\w+='[^']*'/gi, "")
-      .replace(/javascript:[^"']*/gi, "")
-      .replace(/<!ENTITY[\s\S]*?>/gi, "")
-      // 移除 XML 声明和 DOCTYPE
-      .replace(/<\?xml[\s\S]*?\?>/gi, "")
-      .replace(/<!DOCTYPE[\s\S]*?>/gi, "")
-      // 去除 width / height / 其他无意义属性
-      .replace(/\s+(width|height|t|p-id|version)\s*=\s*(["'][^"']*["']|\S+)/gi, "")
-      // JSX 属性名转换
-      .replace(/\bclass=/gi, "className=")
-      .replace(/\bclip-rule=/gi, "clipRule=")
-      .replace(/\bfill-rule=/gi, "fillRule=")
-      .replace(/\bstroke-width=/gi, "strokeWidth=")
-      .replace(/\bstroke-linecap=/gi, "strokeLinecap=")
-      .replace(/\bstroke-linejoin=/gi, "strokeLinejoin=")
-      // 清理多余空格
-      .replace(/\s{2,}/g, " ")
-      .trim()
-  );
+  // 基本清理流程
+  svgText = svgText
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/<foreignObject[\s\S]*?>[\s\S]*?<\/foreignObject>/gi, "")
+    .replace(/\son\w+="[^"]*"/gi, "")
+    .replace(/\son\w+='[^']*'/gi, "")
+    .replace(/javascript:[^"']*/gi, "")
+    .replace(/<!ENTITY[\s\S]*?>/gi, "")
+    .replace(/<\?xml[\s\S]*?\?>/gi, "")
+    .replace(/<!DOCTYPE[\s\S]*?>/gi, "")
+    .replace(/\s+(width|height|t|p-id|version)\s*=\s*(["'][^"']*["']|\S+)/gi, "")
+    .replace(/\bclass=/gi, "className=")
+    .replace(/\bclip-rule=/gi, "clipRule=")
+    .replace(/\bfill-rule=/gi, "fillRule=")
+    .replace(/\bstroke-width=/gi, "strokeWidth=")
+    .replace(/\bstroke-linecap=/gi, "strokeLinecap=")
+    .replace(/\bstroke-linejoin=/gi, "strokeLinejoin=")
+    // 删除空或无效的 clipPath 定义
+    .replace(/<clipPath[\s\S]*?<\/clipPath>/gi, (match) => {
+      const hasValidShape = /<(?:rect|path|circle|ellipse|polygon|use)[\s\S]*?(?:width\s*=\s*["']\s*\d+\s*["']|height\s*=\s*["']\s*\d+\s*["']|d\s*=\s*["'][^"']+["'])/i.test(match);
+      return hasValidShape ? match : "";
+    })
+    // 删除空 defs（如果内只剩空白）
+    .replace(/<defs>[\s\S]*?<\/defs>/gi, (match) => {
+      const inner = match.replace(/<\/?defs>/gi, "");
+      const nonWhitespace = inner.replace(/\s+/g, "");
+      return nonWhitespace === "" ? "" : match;
+    })
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  return svgText;
 }
 
-// ====================  颜色处理  ====================
-/** 从 props 中提取 SVG 的 fill / stroke 颜色 */
-function extractSvgColor({ color, className, style }: Pick<IconProps, "color" | "className" | "style">): {
+/** 提取用户 props 中 fill / stroke / genericColor / subColors 信息 */
+function extractSvgColorOptions(props: Pick<IconProps, "color" | "subColors" | "style" | "className">): {
   fill?: string;
   stroke?: string;
+  genericColor?: string;
+  subColors?: IconProps["subColors"];
 } {
-  const result: { fill?: string; stroke?: string } = {};
+  const result: { fill?: string; stroke?: string; genericColor?: string; subColors?: IconProps["subColors"] } = {};
 
-  // 1️⃣ 优先使用显式 props
-  if (style?.fill) result.fill = style.fill;
-  if (style?.stroke) result.stroke = style.stroke;
-  if (color || style?.color) {
-    result.fill = color || style?.color;
-    result.stroke = color || style?.color;
+  if (props.subColors) {
+    result.subColors = props.subColors;
   }
 
-  // 2️⃣ TailwindCSS 类名解析
-  if (className) {
-    const fillMatch = className.match(/\bfill-([a-zA-Z0-9-_]+)/);
-    const strokeMatch = className.match(/\bstroke-([a-zA-Z0-9-_]+)/);
-    if (fillMatch) result.fill = `var(--${fillMatch[0]})`;
-    if (strokeMatch) result.stroke = `var(--${strokeMatch[0]})`;
+  // 从 style 中提取显式 fill / stroke
+  if (props.style?.fill) {
+    result.fill = props.style.fill;
+  }
+  if (props.style?.stroke) {
+    result.stroke = props.style.stroke;
+  }
+
+  // 如果用户传 color，但是没有显式 fill 或 stroke
+  if (props.color && result.fill === undefined && result.stroke === undefined) {
+    result.genericColor = props.color;
+  } else {
+    // 如果用户同时传 color 并且希望作为 fill 或 stroke
+    if (props.color) {
+      result.fill = result.fill ?? props.color;
+      result.stroke = result.stroke ?? props.color;
+    }
+  }
+
+  // 从 className（如 Tailwind 类）提取 fill-xxx / stroke-xxx
+  if (!result.fill && props.className) {
+    const fillMatch = props.className.match(/\bfill-([a-zA-Z0-9-_]+)/);
+    if (fillMatch) {
+      result.fill = `var(--${fillMatch[0]})`;
+    }
+  }
+  if (!result.stroke && props.className) {
+    const strokeMatch = props.className.match(/\bstroke-([a-zA-Z0-9-_]+)/);
+    if (strokeMatch) {
+      result.stroke = `var(--${strokeMatch[0]})`;
+    }
   }
 
   return result;
 }
 
-/** 替换 SVG 内部 fill/stroke 颜色 */
-function applySvgColors(svg: string, { fill, stroke }: { fill?: string; stroke?: string }): string {
+/**
+ * 替换 SVG 内部 fill/stroke 颜色，并处理子项映射 subColors；
+ * 对于 props.color（未明确分 fill/stroke）时，使用 genericColor 根据子项已有属性判断替换。
+ */
+function applySvgColors(
+  svg: string,
+  options: {
+    fill?: string;
+    stroke?: string;
+    genericColor?: string;
+    subColors?: IconProps["subColors"];
+  }
+): string {
   if (!svg) return svg;
 
-  if (fill) {
-    svg = svg.replace(/\bfill\s*=\s*(['"]?)([^"'\s>]+)\1/gi, (m, _q, color) => (shouldPreserve(color) ? m : `fill="${fill}"`));
-    svg = svg.replace(/<path(?![^>]*fill=)/gi, `<path fill="${fill}"`);
+  const { fill, stroke, genericColor, subColors } = options;
+
+  // --- 1️⃣ 处理 subColors 映射（若提供） ---
+  if (subColors) {
+    Object.entries(subColors).forEach(([selector, { fill: subFill, stroke: subStroke }]) => {
+      if (subFill) {
+        const reFill = new RegExp(`(<${selector}[^>]*?)\\sfill=['"]?([^"'>\\s]+)['"]?`, "gi");
+        svg = svg.replace(reFill, (m, p1) => `${p1} fill="${subFill}"`);
+      }
+      if (subStroke) {
+        const reStroke = new RegExp(`(<${selector}[^>]*?)\\sstroke=['"]?([^"'>\\s]+)['"]?`, "gi");
+        svg = svg.replace(reStroke, (m, p1) => `${p1} stroke="${subStroke}"`);
+      }
+    });
   }
 
+  // --- 2️⃣ 如果用户明确指定 fill 或 stroke，则按其替换 ---
+  if (fill) {
+    svg = svg.replace(/\bfill\s*=\s*(['"]?)([^"'\s>]+)\1/gi, (m, _q, colorVal) => (shouldPreserve(colorVal) ? m : `fill="${fill}"`));
+    // 给无 fill 的基本图形默认加 fill
+    svg = svg.replace(/<(path|circle|rect|ellipse)(?![^>]*\sfill=)/gi, `<$1 fill="${fill}"`);
+  }
   if (stroke) {
-    svg = svg.replace(/\bstroke\s*=\s*(['"]?)([^"'\s>]+)\1/gi, (m, _q, color) => (shouldPreserve(color) ? m : `stroke="${stroke}"`));
-    svg = svg.replace(/<path(?![^>]*stroke=)/gi, `<path stroke="${stroke}"`);
+    svg = svg.replace(/\bstroke\s*=\s*(['"]?)([^"'\s>]+)\1/gi, (m, _q, colorVal) => (shouldPreserve(colorVal) ? m : `stroke="${stroke}"`));
+    svg = svg.replace(/<(path|circle|rect|ellipse)(?![^>]*\sstroke=)/gi, `<$1 stroke="${stroke}"`);
+  }
+
+  // --- 3️⃣ 如果只有 genericColor（且 fill/stroke 均未明确） ---
+  if (!fill && !stroke && genericColor) {
+    svg = svg.replace(/<(path|circle|rect|ellipse)([^>]*)/gi, (match, tag, rest) => {
+      const hasFill = /(\sfill=)/i.test(rest);
+      const hasStroke = /(\sstroke=)/i.test(rest);
+
+      if (hasFill && !hasStroke) {
+        // 子项已用 fill → 替换 fill
+        return match.replace(/(\sfill\s*=\s*['"]?)([^'"\s>]+)(['"]?)/i, `$1${genericColor}$3`);
+      }
+      if (hasStroke && !hasFill) {
+        // 子项已用 stroke → 替换 stroke
+        return match.replace(/(\sstroke\s*=\s*['"]?)([^'"\s>]+)(['"]?)/i, `$1${genericColor}$3`);
+      }
+      // 两者都有或都没有，则默认替换 fill（你也可改为 stroke）
+      return match.replace(/<(path|circle|rect|ellipse)/, `<$1 fill="${genericColor}"`);
+    });
   }
 
   return svg;
 }
-
-// ====================  SVG 主处理函数  ====================
-/** 整合 SVG 处理：清理 + 尺寸 + 颜色 */
-function processSvg(svgText: string, props: Pick<IconProps, "color" | "className" | "style" | "size">): string {
+// ==================== SVG 主处理函数 ====================
+function processSvg(svgText: string, props: Pick<IconProps, "color" | "className" | "style" | "size" | "subColors">): string {
   // 1️⃣ 清理
   svgText = sanitizeSvg(svgText);
 
@@ -141,32 +216,23 @@ function processSvg(svgText: string, props: Pick<IconProps, "color" | "className
     svgText = svgText.replace("<svg", '<svg viewBox="0 0 16 16"');
   }
 
-  // 3️⃣ 若存在显式尺寸类 / props，则让 SVG 自适应外层容器
+  // 3️⃣ 尺寸处理：如果用户有显式尺寸类或 size/width/height，则让 SVG 自适应容器
   const hasExplicitSize = hasSizeClass(props.className) || props.size || (props.style && (props.style.width || props.style.height));
   if (hasExplicitSize) {
     svgText = svgText.replace("<svg", '<svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet"');
   } else {
-    // 没有显式尺寸，给一个默认尺寸，比如 16x16
     svgText = svgText.replace("<svg", '<svg width="16" height="16" preserveAspectRatio="xMidYMid meet"');
   }
 
-  // 4️⃣ 颜色处理
-  // 判断全局是否已有 fill 或 stroke 属性
-  // const hasColorAttr = /\s(fill|stroke)=["'][^"']*["']/.test(svgText);
-  // if (!hasColorAttr) {
-  //   // 给 <svg> 标签加上默认颜色属性
-  //   svgText = svgText.replace(/<svg\b([^>]*)>/, `<svg$1 fill="currentColor" stroke="currentColor">`);
-  // }
+  // 4️⃣ 颜色提取
+  const { fill, stroke, genericColor, subColors } = extractSvgColorOptions(props);
+  svgText = applySvgColors(svgText, { fill, stroke, genericColor, subColors });
 
-  const { fill, stroke } = extractSvgColor(props);
-  if (fill || stroke) {
-    svgText = applySvgColors(svgText, { fill, stroke });
-  }
   return svgText;
 }
 
-// ====================  组件主体部分     ====================
-export default function Icon({ name, wrapperClass, className, color, style, size, fallback, onClick }: IconProps) {
+// ==================== 组件主体 ====================
+export default function Icon({ name, wrapperClass, className, color, subColors, style, size, fallback, onClick }: IconProps) {
   const [svgContent, setSvgContent] = useState<string>("");
   const [error, setError] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
@@ -184,14 +250,12 @@ export default function Icon({ name, wrapperClass, className, color, style, size
       controllerRef.current = new AbortController();
 
       if (svgCache.has(iconPath)) {
-        // ✅ 缓存命中，不重新请求
         setSvgContent(svgCache.get(iconPath)!);
         return;
       }
 
       try {
         const res = await fetch(iconPath, { signal: controllerRef.current.signal });
-        console.log(`请求图标：${name}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const text = await res.text();
         cacheSet(iconPath, text);
@@ -206,39 +270,31 @@ export default function Icon({ name, wrapperClass, className, color, style, size
 
     loadSvg();
     return () => controllerRef.current?.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
 
   const processedSvg = useMemo(() => {
-    return processSvg(svgContent, { color, className, style, size });
-  }, [svgContent, color, className, style, size]);
+    return processSvg(svgContent, { color, className, style, size, subColors });
+  }, [svgContent, color, className, style, size, subColors]);
 
-  /** 计算最终样式 */
-  const finalStyle = useMemo(() => {
-    const _style: CSSProperties = {
+  const finalStyle: CSSProperties = useMemo(() => {
+    return {
       ...(size ? { width: size, height: size } : {}),
       ...(color ? { color } : {}),
       ...(style ? style : {}),
     };
-    return _style;
   }, [style, size, color]);
 
-  if (error)
+  if (error) {
     return (
       <>
         {fallback ?? (
-          <span
-            className="text-general-warning"
-            style={{
-              color: "red",
-              fontSize: 16,
-            }}
-          >
+          <span className="text-general-warning" style={{ color: "red", fontSize: 16 }}>
             ⚠
           </span>
         )}
       </>
     );
+  }
 
   return (
     <div className={wrapperClass} onClick={onClick}>
