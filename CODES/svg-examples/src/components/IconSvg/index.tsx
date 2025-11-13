@@ -1,15 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { SVG_PATH_NAMES } from "./svgPath_all";
+import { LRUCache } from "lru-cache";
 
 /* ==================== 类型定义 ==================== */
-
 export type SvgPathTypes = (typeof SVG_PATH_NAMES)[number];
-
-/** 尺寸互斥规则：size 与 width/height 不能同时使用 */
 type IconSizeProps = { size?: number; width?: never; height?: never } | { size?: never; width: number; height: number };
 
 /** IconSvg 组件 props 类型 */
 export type IconProps = IconSizeProps & {
+  /** SVG 名 */
   name: SvgPathTypes;
   /** 按出现顺序替换已有 fill/stroke 的颜色（只替换已有属性） */
   colors?: string[];
@@ -37,17 +36,11 @@ type ProcessSvgOptions = {
 };
 
 /* ==================== 缓存逻辑 ==================== */
-
-const MAX_CACHE_SIZE = 200;
-const svgCache = new Map<string, string>();
-
+/** 全局 SVG 缓存 */
+const svgCache = new LRUCache<string, string>({ max: 200 });
+/** 设置缓存 */
 function cacheSet(key: string, value: string) {
-  if (svgCache.has(key)) svgCache.delete(key);
   svgCache.set(key, value);
-  if (svgCache.size > MAX_CACHE_SIZE) {
-    const firstKey = svgCache.keys().next().value;
-    if (firstKey) svgCache.delete(firstKey);
-  }
 }
 
 /* ==================== SVG 清理 ==================== */
@@ -184,8 +177,9 @@ export default function IconSvg(props: IconProps) {
     controllerRef.current?.abort();
     controllerRef.current = new AbortController();
 
-    if (svgCache.has(iconPath)) {
-      setSvgContent(svgCache.get(iconPath)!);
+    const cached = svgCache.get(iconPath); // ✅ 使用 LRU Cache 读取
+    if (cached) {
+      setSvgContent(cached);
       return;
     }
 
@@ -194,7 +188,7 @@ export default function IconSvg(props: IconProps) {
         const res = await fetch(iconPath, { signal: controllerRef.current!.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const text = await res.text();
-        cacheSet(iconPath, text);
+        cacheSet(iconPath, text); // ✅ 使用 LRU Cache 存储
         setSvgContent(text);
       } catch (e) {
         if (!(e instanceof DOMException && e.name === "AbortError")) {

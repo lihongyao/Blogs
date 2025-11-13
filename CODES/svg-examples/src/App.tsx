@@ -19,9 +19,9 @@ export default function App() {
         <IconSvg name="profile/wx" width={20} height={20} color="red" />
       </div>
       {/* 异常 */}
-      <div className="flex items-center gap-4">
+      {/* <div className="flex items-center gap-4">
         <IconSvg name="xxx" size={20} />
-      </div>
+      </div> */}
     </div>
   );
 }
