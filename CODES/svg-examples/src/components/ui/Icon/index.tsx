@@ -255,12 +255,15 @@ export default function Icon({ name, src, className, wrapperClass, style, color,
 
   /* ==================== 渲染 ==================== */
 
-  const isInvalid = !iconPath || error || !svg;
+  const isLoading = !svg && !error;
+  const isInvalid = !iconPath || error;
 
   return (
     <div className={`inline-flex items-center justify-center ${wrapperClass ?? ""}`} onClick={handleClick}>
       {isInvalid ? (
         (fallback ?? <span className="text-red-500">⚠</span>)
+      ) : isLoading ? (
+        <div className={className} style={finalStyle} role={onClick ? "button" : undefined} tabIndex={onClick ? 0 : undefined} onKeyDown={handleKeyDown} />
       ) : (
         <div className={className} style={finalStyle} dangerouslySetInnerHTML={{ __html: svg }} role={onClick ? "button" : undefined} tabIndex={onClick ? 0 : undefined} onKeyDown={handleKeyDown} />
       )}
