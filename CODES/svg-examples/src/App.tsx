@@ -4,7 +4,7 @@ import Icon from "./components/ui/Icon";
 
 export default function App() {
   return (
-    <div className="p-20 flex flex-col justify-center items-center gap-8 bg-black">
+    <div className="p-20 flex flex-col justify-center items-center gap-8">
       {/* 1. 尺寸示例 */}
       <div className="flex items-center gap-4">
         <Icon name="dollar" className="w-6 h-6" />
@@ -20,6 +20,7 @@ export default function App() {
         <Icon name="dollar" className="w-6 h-6" colors={["#0FD3FF", "#16AAFF", "#0FD3FF"]} />
         <Icon name="checkbox" className="w-6 h-6" colors={["#16AAFF", "#0FD3FF", "#FFFFFF"]} />
         <Icon name="arrow_btn" className="w-6 h-6" colors={["#2A2A2A", "white", "var(--text-primary-color)", "blue"]} />
+        <Icon name="home" className="w-6 h-6" colors={['red', '#6D7A9E', '#6D7A9E', 'currentColor', 'currentColor']} />
 
         {/* 普通 color / currentColor 模式 */}
         <Icon name="wx" className="w-6 h-6" color="green" />
@@ -33,9 +34,9 @@ export default function App() {
       </div>
 
       {/* 4. fallback / 异常示例 */}
-      <div className="flex items-center gap-4">
+      {/* <div className="flex items-center gap-4">
         <Icon name="xxx" className="w-6 h-6" fallback={<span className="text-red-500">❌</span>} />
-      </div>
+      </div> */}
     </div>
   );
 }
