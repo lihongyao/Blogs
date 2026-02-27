@@ -10,7 +10,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "rollup": "^4.39.0",
+    "rollup": "^4.59.0",
     "rollup-plugin-progress": "^1.1.2"
   },
   "dependencies": {
