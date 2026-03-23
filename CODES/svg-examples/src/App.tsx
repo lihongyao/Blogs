@@ -20,7 +20,7 @@ export default function App() {
         <Icon name="dollar" className="w-6 h-6" colors={["#0FD3FF", "#16AAFF", "#0FD3FF"]} />
         <Icon name="checkbox" className="w-6 h-6" colors={["#16AAFF", "#0FD3FF", "#FFFFFF"]} />
         <Icon name="arrow_btn" className="w-6 h-6" colors={["#2A2A2A", "white", "var(--text-primary-color)", "blue"]} />
-        <Icon name="home" className="w-6 h-6" colors={['red', '#6D7A9E', '#6D7A9E', 'currentColor', 'currentColor']} />
+        <Icon name="home" className="w-6 h-6" colors={["transparent", "blue", "green", "orange"]} />
 
         {/* 普通 color / currentColor 模式 */}
         <Icon name="wx" className="w-6 h-6" color="green" />
