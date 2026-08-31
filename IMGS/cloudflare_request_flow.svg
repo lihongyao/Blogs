@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
+  <title id="title">Cloudflare 网站访问链路</title>
+  <desc id="desc">用户输入 example.com 后，先进行 DNS 查询，请求进入 Cloudflare 边缘网络，再根据缓存和安全规则决定直接响应或回源到源站服务器。</desc>
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#10233f" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#2c6eaa"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#e8752c"/>
+    </marker>
+    <style>
+      .font { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+      .title { font-size: 42px; font-weight: 700; fill: #10233f; letter-spacing: 0; }
+      .subtitle { font-size: 20px; font-weight: 400; fill: #5b6b80; letter-spacing: 0; }
+      .section { font-size: 23px; font-weight: 700; fill: #10233f; letter-spacing: 0; }
+      .label { font-size: 23px; font-weight: 600; fill: #10233f; letter-spacing: 0; }
+      .small { font-size: 18px; font-weight: 400; fill: #5b6b80; letter-spacing: 0; }
+      .service-title { font-size: 25px; font-weight: 700; fill: #10233f; letter-spacing: 0; }
+      .service-copy { font-size: 17px; font-weight: 400; fill: #5b6b80; letter-spacing: 0; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 21px; fill: #10233f; letter-spacing: 0; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="1500" fill="#f7f9fc"/>
+  <path d="M0 0H1200V12H0Z" fill="#e8752c"/>
+
+  <g class="font">
+    <text x="600" y="90" text-anchor="middle" class="title">Cloudflare 网站访问链路</text>
+    <text x="600" y="130" text-anchor="middle" class="subtitle">从域名解析到源站响应，一次请求经过哪些环节？</text>
+
+    <!-- Internet / user -->
+    <g transform="translate(600 230)">
+      <circle cx="0" cy="0" r="64" fill="#e6f1fb" stroke="#2c6eaa" stroke-width="3"/>
+      <path d="M-40 -10H40M-36 20H36M0 -60V60M-37 -38C-14 -18 14 -18 37 -38M-37 38C-14 18 14 18 37 38" fill="none" stroke="#2c6eaa" stroke-width="3" stroke-linecap="round"/>
+      <text x="0" y="105" text-anchor="middle" class="section">互联网</text>
+      <text x="0" y="135" text-anchor="middle" class="small">公网请求从这里开始</text>
+    </g>
+
+    <path d="M600 380V438" fill="none" stroke="#2c6eaa" stroke-width="4" marker-end="url(#arrow-blue)"/>
+
+    <g transform="translate(600 505)" filter="url(#shadow)">
+      <rect x="-300" y="-54" width="600" height="108" rx="18" fill="#ffffff" stroke="#cbd8e6" stroke-width="2"/>
+      <circle cx="-246" cy="0" r="27" fill="#e6f1fb"/>
+      <path d="M-258 1h24M-252 -8l-8 9 8 9M-240 -8l8 9-8 9" fill="none" stroke="#2c6eaa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="-200" y="-7" class="label">用户发起访问</text>
+      <text x="-200" y="25" class="mono">输入 example.com</text>
+    </g>
+
+    <path d="M600 575V638" fill="none" stroke="#2c6eaa" stroke-width="4" marker-end="url(#arrow-blue)"/>
+    <g transform="translate(600 612)">
+      <rect x="-105" y="-20" width="210" height="40" rx="20" fill="#edf5fb" stroke="#c9deef"/>
+      <text x="0" y="7" text-anchor="middle" class="small" fill="#2c6eaa">DNS 查询：域名 → IP</text>
+    </g>
+
+    <!-- Cloudflare -->
+    <g transform="translate(600 845)" filter="url(#shadow)">
+      <rect x="-440" y="-188" width="880" height="376" rx="28" fill="#ffffff" stroke="#e8752c" stroke-width="4"/>
+      <rect x="-440" y="-188" width="880" height="90" rx="28" fill="#fff1e8"/>
+      <rect x="-440" y="-100" width="880" height="2" fill="#f6d1b8"/>
+      <circle cx="-378" cy="-143" r="30" fill="#e8752c"/>
+      <path d="M-394 -139c8-16 29-19 39-4 16-2 27 8 27 21 0 14-12 23-27 23h-39c-14 0-24-8-24-20 0-11 9-20 24-20z" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      <text x="-328" y="-145" class="section">Cloudflare 边缘网络</text>
+      <text x="-328" y="-114" class="small">请求先到最近的边缘节点，再执行缓存与安全规则</text>
+
+      <g transform="translate(-398 -48)">
+        <rect width="380" height="100" rx="16" fill="#f8fbfe" stroke="#d7e4ef" stroke-width="2"/>
+        <circle cx="48" cy="50" r="25" fill="#e6f1fb"/>
+        <path d="M35 51h27M41 42v18M54 42v18" stroke="#2c6eaa" stroke-width="3" stroke-linecap="round"/>
+        <text x="90" y="43" class="service-title">DNS</text>
+        <text x="90" y="70" class="service-copy">解析域名并返回边缘 IP</text>
+      </g>
+      <g transform="translate(18 -48)">
+        <rect width="380" height="100" rx="16" fill="#f8fbfe" stroke="#d7e4ef" stroke-width="2"/>
+        <circle cx="48" cy="50" r="25" fill="#e8f6f3"/>
+        <path d="M34 52c10-20 26-20 36 0M38 61h28M43 39l-5 11M61 39l5 11" fill="none" stroke="#168776" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="90" y="43" class="service-title">CDN</text>
+        <text x="90" y="70" class="service-copy">缓存静态资源，降低访问延迟</text>
+      </g>
+      <g transform="translate(-398 68)">
+        <rect width="380" height="100" rx="16" fill="#f8fbfe" stroke="#d7e4ef" stroke-width="2"/>
+        <circle cx="48" cy="50" r="25" fill="#fff4d9"/>
+        <path d="M48 32l18 8v12c0 13-8 22-18 26-10-4-18-13-18-26V40zM41 51l5 5 11-12" fill="none" stroke="#b27610" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="90" y="43" class="service-title">WAF</text>
+        <text x="90" y="70" class="service-copy">拦截恶意请求与常见攻击</text>
+      </g>
+      <g transform="translate(18 68)">
+        <rect width="380" height="100" rx="16" fill="#f8fbfe" stroke="#d7e4ef" stroke-width="2"/>
+        <circle cx="48" cy="50" r="25" fill="#fde9eb"/>
+        <path d="M48 32v36M32 50h32M37 39l22 22M59 39L37 61" stroke="#bd4654" stroke-width="3" stroke-linecap="round"/>
+        <text x="90" y="43" class="service-title">DDoS 防护</text>
+        <text x="90" y="70" class="service-copy">吸收攻击流量，保护源站可用性</text>
+      </g>
+    </g>
+
+    <path d="M600 1045V1110" fill="none" stroke="#e8752c" stroke-width="4" marker-end="url(#arrow-orange)"/>
+    <g transform="translate(600 1085)">
+      <rect x="-245" y="-21" width="490" height="42" rx="21" fill="#fff1e8" stroke="#f6d1b8"/>
+      <text x="0" y="7" text-anchor="middle" class="small" fill="#b75a1e">回源：缓存未命中，或请求需要动态处理</text>
+    </g>
+
+    <!-- Origin -->
+    <g transform="translate(600 1260)" filter="url(#shadow)">
+      <rect x="-365" y="-112" width="730" height="224" rx="24" fill="#ffffff" stroke="#168776" stroke-width="3"/>
+      <rect x="-365" y="-112" width="730" height="68" rx="24" fill="#e8f6f3"/>
+      <rect x="-365" y="-46" width="730" height="2" fill="#c1e5df"/>
+      <circle cx="-305" cy="-78" r="24" fill="#168776"/>
+      <path d="M-317 -76h24M-317 -66h24M-317 -86h24" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      <text x="-265" y="-80" class="section">源站服务器</text>
+      <text x="-325" y="8" class="label">Nginx / 网站服务</text>
+      <text x="-325" y="45" class="small">HTML · CSS · JavaScript · API</text>
+      <rect x="-325" y="67" width="650" height="10" rx="5" fill="#dff1ed"/>
+      <rect x="-325" y="67" width="430" height="10" rx="5" fill="#168776"/>
+    </g>
+
+    <g transform="translate(600 1430)">
+      <rect x="-430" y="-30" width="860" height="60" rx="16" fill="#eef2f6"/>
+      <circle cx="-394" cy="0" r="13" fill="#2c6eaa"/>
+      <path d="M-400 0l5 5 9-11" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="-365" y="7" class="small">静态资源可由 CDN 直接返回；动态请求则继续回源到源站。</text>
+    </g>
+  </g>
+</svg>
