@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1040" viewBox="0 0 2200 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Base color tokens by hue</title>
+  <desc id="desc">Three unequal color token scales for red, green, and blue, plus an ellipsis column indicating additional color families.</desc>
+
+  <rect width="2200" height="1040" fill="#f3f6fa"/>
+
+  <rect x="54" y="44" width="2092" height="952" rx="24" fill="#fbfcfe" stroke="#1b2735" stroke-width="4"/>
+
+  <text x="1100" y="92" text-anchor="middle" fill="#1b2735" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" font-size="20" font-weight="600" letter-spacing="2">BASE COLOR TOKENS</text>
+  <text x="1100" y="124" text-anchor="middle" fill="#637083" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" font-size="16">One source of truth for each color value</text>
+
+  <!-- Red -->
+  <g transform="translate(55 0)">
+    <rect x="100" y="168" width="420" height="78" rx="16" fill="#ffffff" stroke="#1b2735" stroke-width="4"/>
+    <circle cx="136" cy="207" r="10" fill="#e93636"/>
+    <text x="310" y="216" text-anchor="middle" fill="#1b2735" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" font-size="28" font-weight="600">red</text>
+
+    <rect x="100" y="270" width="420" height="710" rx="16" fill="#f7f9fc" stroke="#1b2735" stroke-width="4"/>
+    <rect x="126" y="296" width="368" height="70" rx="12" fill="#ffd6d6"/>
+    <text x="310" y="340" text-anchor="middle" fill="#57121e" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#FFD6D6</text>
+
+    <rect x="126" y="382" width="368" height="70" rx="12" fill="#ff9a9a"/>
+    <text x="310" y="426" text-anchor="middle" fill="#57121e" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#FF9A9A</text>
+
+    <rect x="126" y="468" width="368" height="70" rx="12" fill="#ff5b5b"/>
+    <text x="310" y="512" text-anchor="middle" fill="#3b0a12" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#FF5B5B</text>
+
+    <rect x="126" y="554" width="368" height="70" rx="12" fill="#e93636"/>
+    <text x="310" y="598" text-anchor="middle" fill="#ffffff" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#E93636</text>
+
+    <rect x="126" y="640" width="368" height="70" rx="12" fill="#b9162b"/>
+    <text x="310" y="684" text-anchor="middle" fill="#ffffff" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#B9162B</text>
+
+    <rect x="126" y="726" width="368" height="70" rx="12" fill="#720b1c"/>
+    <text x="310" y="770" text-anchor="middle" fill="#ffffff" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#720B1C</text>
+
+    <rect x="126" y="812" width="368" height="70" rx="12" fill="#ffffff" stroke="#aeb9c7" stroke-width="3" stroke-dasharray="8 8"/>
+    <text x="310" y="858" text-anchor="middle" fill="#526174" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" font-size="28" font-weight="600">…</text>
+  </g>
+
+  <!-- Green -->
+  <g transform="translate(55 0)">
+    <rect x="590" y="168" width="420" height="78" rx="16" fill="#ffffff" stroke="#1b2735" stroke-width="4"/>
+    <circle cx="626" cy="207" r="10" fill="#36c871"/>
+    <text x="800" y="216" text-anchor="middle" fill="#1b2735" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" font-size="28" font-weight="600">green</text>
+
+    <rect x="590" y="270" width="420" height="710" rx="16" fill="#f7f9fc" stroke="#1b2735" stroke-width="4"/>
+    <rect x="616" y="296" width="368" height="70" rx="12" fill="#d7f7e2"/>
+    <text x="800" y="340" text-anchor="middle" fill="#0b4a2a" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#D7F7E2</text>
+
+    <rect x="616" y="382" width="368" height="70" rx="12" fill="#88e1a4"/>
+    <text x="800" y="426" text-anchor="middle" fill="#0b4a2a" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#88E1A4</text>
+
+    <rect x="616" y="468" width="368" height="70" rx="12" fill="#36c871"/>
+    <text x="800" y="512" text-anchor="middle" fill="#07351e" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#36C871</text>
+
+    <rect x="616" y="554" width="368" height="70" rx="12" fill="#088a4b"/>
+    <text x="800" y="598" text-anchor="middle" fill="#ffffff" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#088A4B</text>
+
+    <rect x="616" y="640" width="368" height="70" rx="12" fill="#ffffff" stroke="#aeb9c7" stroke-width="3" stroke-dasharray="8 8"/>
+    <text x="800" y="686" text-anchor="middle" fill="#526174" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" font-size="28" font-weight="600">…</text>
+  </g>
+
+  <!-- Blue -->
+  <g transform="translate(55 0)">
+    <rect x="1080" y="168" width="420" height="78" rx="16" fill="#ffffff" stroke="#1b2735" stroke-width="4"/>
+    <circle cx="1116" cy="207" r="10" fill="#3a8dff"/>
+    <text x="1290" y="216" text-anchor="middle" fill="#1b2735" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" font-size="28" font-weight="600">blue</text>
+
+    <rect x="1080" y="270" width="420" height="710" rx="16" fill="#f7f9fc" stroke="#1b2735" stroke-width="4"/>
+    <rect x="1106" y="296" width="368" height="70" rx="12" fill="#d9eeff"/>
+    <text x="1290" y="340" text-anchor="middle" fill="#07385d" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#D9EEFF</text>
+
+    <rect x="1106" y="382" width="368" height="70" rx="12" fill="#91c8ff"/>
+    <text x="1290" y="426" text-anchor="middle" fill="#063660" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#91C8FF</text>
+
+    <rect x="1106" y="468" width="368" height="70" rx="12" fill="#3a8dff"/>
+    <text x="1290" y="512" text-anchor="middle" fill="#ffffff" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#3A8DFF</text>
+
+    <rect x="1106" y="554" width="368" height="70" rx="12" fill="#0d5fea"/>
+    <text x="1290" y="598" text-anchor="middle" fill="#ffffff" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#0D5FEA</text>
+
+    <rect x="1106" y="640" width="368" height="70" rx="12" fill="#003fa8"/>
+    <text x="1290" y="684" text-anchor="middle" fill="#ffffff" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#003FA8</text>
+
+    <rect x="1106" y="726" width="368" height="70" rx="12" fill="#00235e"/>
+    <text x="1290" y="770" text-anchor="middle" fill="#ffffff" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#00235E</text>
+
+    <rect x="1106" y="812" width="368" height="70" rx="12" fill="#00132f"/>
+    <text x="1290" y="856" text-anchor="middle" fill="#ffffff" font-family="SFMono-Regular, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="600">#00132F</text>
+
+    <rect x="1106" y="898" width="368" height="70" rx="12" fill="#ffffff" stroke="#aeb9c7" stroke-width="3" stroke-dasharray="8 8"/>
+    <text x="1290" y="944" text-anchor="middle" fill="#526174" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" font-size="28" font-weight="600">…</text>
+  </g>
+
+  <!-- Additional color families -->
+  <g transform="translate(55 0)">
+    <rect x="1570" y="168" width="420" height="78" rx="16" fill="#ffffff" stroke="#1b2735" stroke-width="4"/>
+    <circle cx="1606" cy="207" r="10" fill="#8b95a5"/>
+    <text x="1780" y="216" text-anchor="middle" fill="#1b2735" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" font-size="28" font-weight="600">…</text>
+
+    <rect x="1570" y="270" width="420" height="710" rx="16" fill="#f7f9fc" stroke="#1b2735" stroke-width="4"/>
+    <rect x="1596" y="296" width="368" height="70" rx="12" fill="#ffffff" stroke="#aeb9c7" stroke-width="3" stroke-dasharray="8 8"/>
+    <text x="1780" y="342" text-anchor="middle" fill="#526174" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" font-size="28" font-weight="600">…</text>
+  </g>
+</svg>
