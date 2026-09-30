@@ -107,6 +107,10 @@ $ glab auth login
 
 @See [Codex and Figma: Set up the MCP server ↪ ](https://help.figma.com/hc/en-us/articles/39888629089175-Codex-and-Figma-Set-up-the-MCP-server?utm_source=chatgpt.com)
 
+## 扩展
+
+换肤：https://github.com/Fei-Away/Codex-Dream-Skin
+
 # OpenCode
 
 ## 官网与项目简介
