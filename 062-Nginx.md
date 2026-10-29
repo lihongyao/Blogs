@@ -706,38 +706,3 @@ const router = new VueRouter({
 | `nginx -s reload` | 重载               |
 | `nginx -t`        | 测试nginx.conf配置 |
 | `nginx -c xxx`    | 指定conf文件       |
-
-
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -74,6 +74,10 @@ Successfully installed the Sentry Next.js SDK!
 
 https://docs.sentry.io/platforms/javascript/guides/nextjs/sourcemaps/
 
+# Sentry Configuration
+
+https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/
+
 # 参考
 
 @see https://eastondev.com/blog/zh/posts/dev/20251220-nextjs-production-monitoring/

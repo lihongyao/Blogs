@@ -21,9 +21,9 @@ Cloudflare 的功能很多，但理解它不需要从产品列表开始。先从
 ```text
 用户输入网址
     ↓
-DNS 把域名翻译成地址
+DNS 解析（将域名翻译成 IP 地址）
     ↓
-浏览器与服务器建立连接
+浏览器与服务器建立连接（TCP 连接）
     ↓
 通过 HTTP/HTTPS 请求网页
     ↓
@@ -48,7 +48,7 @@ https://www.example.com/articles/cloudflare
 
 ```text
 https://                  协议
-www.example.com           主机名
+www.example.com           主机名（域名）
 /articles/cloudflare      路径
 ```
 
@@ -300,16 +300,6 @@ sudo systemctl status nginx
 
 如果看到 `active (running)`，说明 Nginx 进程已经正常运行。按 `q` 可以退出状态查看。
 
-如果服务器启用了 UFW，还需要允许 SSH 和 HTTP 流量：
-
-```bash
-sudo ufw status
-sudo ufw allow 22/tcp
-sudo ufw allow 80/tcp
-```
-
-不要在还没有确认 SSH 规则的情况下直接执行 `sudo ufw enable`，否则可能把当前 SSH 连接挡在服务器外。云厂商的安全组和服务器内部的 UFW 是两层独立的防火墙，访问公网网站时，两层都需要允许 `80` 端口。
-
 Ubuntu 安装 Nginx 后通常会自动创建默认站点。此时直接在浏览器中打开：
 
 ```text
@@ -547,11 +537,9 @@ Nginx 返回网页
 
 可以这样理解：
 
-```text
-注册商：你租下了这个名字
-Cloudflare：负责回答这个名字应该指向哪里
-源站：真正保存网页文件的服务器
-```
+- 注册商：你租下了这个名字
+- Cloudflare：负责回答这个名字应该指向哪里
+- 源站：真正保存网页文件的服务器
 
 ## 将域名添加到 Cloudflare
 
@@ -572,7 +560,7 @@ example.com
 3. 域名验证 TXT 记录
 4. 第三方服务要求的 CNAME 记录
 
-Cloudflare 官方也建议在修改 Nameserver 前先检查记录；如果权威 DNS 切换完成后缺少必要记录，网站或邮箱都可能无法访问。[Cloudflare DNS 入门](https://developers.cloudflare.com/dns/get-started/)
+Cloudflare 官方也建议在修改 Nameserver 前先检查记录；如果权威 DNS 切换完成后缺少必要记录，网站或邮箱都可能无法访问。[Cloudflare DNS 入门 ↪](https://developers.cloudflare.com/dns/get-started/)
 
 ## 修改 Nameserver
 
@@ -595,7 +583,7 @@ yyyy.ns.cloudflare.com
   → 保存
 ```
 
-修改的是注册商处的 Nameserver，不是 Cloudflare DNS 页面里的 `A` 记录。保存后，Cloudflare 会等待注册信息更新并验证域名是否已经委派给它。
+修改的是 **<u>注册商处</u>** 的 Nameserver，不是 Cloudflare DNS 页面里的 `A` 记录。保存后，Cloudflare 会等待注册信息更新并验证域名是否已经委派给它。
 
 验证状态可能很快变化，也可能需要更长时间。不要只看本机浏览器的结果，因为浏览器、操作系统和递归 DNS 都可能缓存旧结果。可以用命令行查看当前公开的权威 Nameserver：
 
@@ -661,7 +649,7 @@ TTL（Time to Live）表示其他 DNS 服务器可以缓存这条记录多长时
 
 灰云表示 DNS only：Cloudflare 只回答 DNS 查询，返回你配置的源站地址，请求不会经过 Cloudflare 的代理。它适合作为这一阶段的验证状态，因为我们可以先确认：域名是否真的找到了 Ubuntu 源站。
 
-灰云的代价也很明确：源站 IP 会公开，CDN、WAF、DDoS 防护和 Cloudflare 的 HTTP 分析都不会作用于这次请求。它只是测试阶段的临时状态，不是生产网站的最终安全方案。[Proxy status 官方说明](https://developers.cloudflare.com/dns/proxy-status/)
+灰云的代价也很明确：源站 IP 会公开，CDN、WAF、DDoS 防护和 Cloudflare 的 HTTP 分析都不会作用于这次请求。它只是测试阶段的临时状态，不是生产网站的最终安全方案。[Proxy status 官方说明 ↪](https://developers.cloudflare.com/dns/proxy-status/)
 
 ## 让 Nginx 认识这个域名
 
@@ -719,8 +707,8 @@ sudo nginx -T | less
 先查看两个域名解析到了哪里：
 
 ```bash
-$ dig +short example.com
-$ dig +short www.example.com
+dig +short example.com
+dig +short www.example.com
 ```
 
 在灰云状态下，正常情况下应该看到源站 IP，或者 `www` 先返回 CNAME 再解析到源站 IP：
@@ -1192,267 +1180,233 @@ Ubuntu Nginx 返回网页
 
 到这里，DNS、代理、缓存、回源、HTTPS 和基础安全已经串成了一条完整链路。后面的 Workers、Tunnel、R2、Zero Trust 等产品，都可以放回这条链路中理解，而不必把它们当成互不相关的功能按钮。
 
+# Workers & Pages
+
+## Workers
+
+Cloudflare Workers 是运行在 Cloudflare 网络边缘的 JavaScript/TypeScript 运行时。请求到达 Cloudflare 后，Worker 可以通过 `fetch()` 处理 HTTP 请求、返回响应，并通过 `env` 访问 KV、R2、D1 等绑定资源。
+
+它不需要自己准备服务器、操作系统或监听公网端口，适合编写 API、鉴权逻辑、请求改写和轻量的边缘业务。
+
+> **一个最小 Worker**
+
+Worker 的入口通常导出一个对象，并在 `fetch()` 中处理请求：
+
+```js
+export default {
+  async fetch() {
+    return new Response("Hello from Cloudflare Workers")
+  },
+}
+```
+
+浏览器通过 HTTP 调用 Worker；如果需要读取 KV 等资源，则在处理函数中使用 `env.BLOG_KV` 这样的绑定。
+
+## 在现有项目中部署
+
+下面结合现有项目走一遍通用的部署流程。Worker 的 JavaScript 运行在 Cloudflare 上，浏览器端通过 HTTP 调用它。
+
+### 1. 配置项目
+
+先在 `wrangler.jsonc` 中修改 Worker 名称、入口路径等配置。KV namespace 等资源绑定在对应的配置章节中添加。
+
+### 2. 登录 Wrangler
+
+```shell
+$ pnpm exec wrangler login
+```
+
+Wrangler 会打开 Cloudflare 授权页。确认授权后，它通过本地回调 `http://localhost:8976/oauth/callback` 完成登录，并在本机保存凭据。可以用下面的命令检查当前登录状态：
+
+```shell
+$ pnpm exec wrangler whoami
+```
+
+### 3. 部署 Worker
+
+```shell
+$ pnpm run deploy
+```
+
+这个脚本实际执行 `wrangler deploy`，会打包代码、上传到 Cloudflare，并应用 `wrangler.jsonc` 中的配置。
+
+### 4. 验证线上接口
+
+```shell
+$ curl -i https://cf-workerspace.new-account-9c9.workers.dev
+```
+
+如果接口返回的数据不符合预期，优先检查入口路径、部署账号和 `wrangler.jsonc` 中的配置。
+
+## Pages
+
+Cloudflare Pages 更偏向前端项目部署：它负责托管静态资源，也可以配合 Functions 或 Workers 提供动态能力。可以先这样区分：
+
+| 产品 | 主要用途 |
+| --- | --- |
+| Workers | API、边缘逻辑和服务端代码 |
+| Pages | 静态网站和前端项目部署 |
+
 # Workers KV
 
-在 Cloudflare 首页的 **Build** 分类中，可以看到 Workers KV。它的全名是 Workers Key Value，也就是 Workers 使用的键值存储。
-
-一句话理解：**KV 用一个 key 保存一个 value，Worker 在靠近用户的 Cloudflare 网络中读取它。**
+[Workers KV ↪](https://developers.cloudflare.com/kv/get-started/) 是供 Worker 使用的分布式键值存储：用一个 key 保存一个 value，并让 Worker 从靠近用户的 Cloudflare 网络中读取它。
 
 ```text
 site-config  →  { "title": "我的博客", "theme": "light" }
 ```
 
-它不像 MySQL 那样有表、字段和复杂查询，也不像 R2 那样专门保存图片和文件。KV 更像一个分布式的 **配置字典**：你给它一个名字，它返回对应的值。
+它更像一个分布式的配置字典，没有 MySQL 的表和复杂查询，也不适合像 R2 那样存放大文件。
 
-## KV 适合做什么？
+## 适用场景与限制
 
-KV 的特点是读得快、读得多，写入相对少。数据写入中心存储后，会在 Cloudflare 网络中按访问情况缓存，后续读取可以直接从靠近用户的节点返回。[KV 的工作方式](https://developers.cloudflare.com/kv/concepts/how-kv-works/)
-
-比较适合的场景：
-
-- 网站配置，例如站点名称、公告、主题开关；
-- Feature Flag，例如是否开启新页面；
-- 用户偏好，例如语言和界面主题；
-- 公开内容的 JSON 缓存；
-- 访问频率高、更新频率低的白名单或路由配置。
-
-不太适合的场景：
-
-- 订单、库存、账户余额等必须立即一致的数据；
-- 需要复杂条件查询、排序和关联的数据；
-- 每秒频繁修改同一个 key 的计数器；
-- 图片、视频、压缩包等大文件；
-- 需要事务和原子操作的业务。
-
-可以先用下面的方式选择产品：
+KV 适合读取频繁、写入较少的数据。数据会按访问情况缓存在 Cloudflare 网络中，因此网站配置、Feature Flag、用户偏好和 JSON 缓存都很合适。[KV 的工作方式 ↪](https://developers.cloudflare.com/kv/concepts/how-kv-works/)
 
 | 需求 | 更适合的产品 |
 | --- | --- |
 | 读很多、写较少的配置 | Workers KV |
 | 关系型数据和 SQL 查询 | D1 |
 | 图片、视频和大文件 | R2 |
-| 强一致性、协调和频繁更新 | Durable Objects |
+| 强一致性、协调或频繁更新 | Durable Objects |
 
-## KV 最容易误解的地方：最终一致性
+KV 采用 **最终一致性**。写入后，其他地区可能在一段时间内仍读到旧值；官方文档说明，缓存中的旧值可能持续约 60 秒或更久，具体还与缓存状态和 `cacheTtl` 有关。[KV 一致性说明 ↪](https://developers.cloudflare.com/kv/concepts/how-kv-works/)
 
-KV 为了让全球读取速度更快，采用的是**最终一致性**。写入之后，发起写入的 Cloudflare 位置通常很快能读到新值，但其他地区可能在一段时间内读到旧值。官方文档说明，缓存中的旧值可能持续约 60 秒或更久，具体还与缓存状态和 `cacheTtl` 有关。[KV 一致性说明](https://developers.cloudflare.com/kv/concepts/how-kv-works/)
+因此，它不适合订单、库存、账户余额、同一个 key 的高频计数，以及依赖事务或原子操作的业务。此类数据应根据需求使用 D1、Durable Objects 或其他数据库。
 
-例如，管理员刚把：
+## 创建并绑定 Namespace
 
-```text
-site-config → { "maintenance": true }
-```
+KV 数据保存在 Namespace 中。Worker 必须先绑定 Namespace，代码才能访问其中的数据。
 
-改成维护模式，某些地区的用户可能仍然短暂看到旧配置。这是 KV 的工作特性，不是数据丢失。
-
-因此，KV 很适合“最终会同步到各地”的配置，不适合“写入后所有请求必须立刻读到同一个值”的业务。如果需要强一致性或同一个 key 的高频写入，可以考虑 Durable Objects；如果是订单和用户数据，通常应该使用数据库。
-
-## 先创建一个 KV Namespace
-
-KV 数据保存在 Namespace 中。Namespace 可以理解成一个独立的 KV 容器，一个 Worker 需要先绑定 Namespace，代码才能访问里面的 key。
-
-在 Cloudflare 控制台中操作：
+先在控制台创建 Namespace：
 
 ```text
 Build
   → Storage & database
   → Workers KV
-  → Create namespace（Create Instance）
-  → 名称：BLOG_KV
+  → Create a KV namespace
+  → Input Namespace name: your_kv_namespace
+  → Choose Data location: Standard
   → Create
 ```
 
-Namespace 的名称主要用于管理，Worker 代码真正使用的是绑定名称。建议把绑定名称写得明确，例如：
-
-```text
-BLOG_KV
-```
-
-接着在 Worker 中添加绑定：
+再把它绑定到 Worker：
 
 ```text
 Workers & Pages
   → 选择你的 Worker
   → Bindings
-  → Add binding
-  → KV namespace
+  → Add binding → KV namespace
   → Variable name：BLOG_KV
   → 选择刚创建的 Namespace
   → Deploy
 ```
 
-绑定完成后，Worker 代码可以通过 `env.BLOG_KV` 使用这个 Namespace：
+绑定后可以通过 `env.BLOG_KV` 访问它：
 
 ```js
 const value = await env.BLOG_KV.get("site-config")
 ```
 
-这里的 `BLOG_KV` 不是环境变量文件中的字符串，而是 Cloudflare 在 Worker 运行时注入的绑定对象。绑定名称必须是合法的 JavaScript 变量名。[KV Binding](https://developers.cloudflare.com/kv/concepts/kv-bindings/)
+`BLOG_KV` 是 Cloudflare 在运行时注入的绑定对象，不是环境变量文件中的字符串。[KV Binding](https://developers.cloudflare.com/kv/concepts/kv-bindings/)
 
-如果更习惯命令行，也可以用 Wrangler 创建 Namespace：
+使用 Wrangler 时，可以运行：
 
 ```bash
 npx wrangler kv namespace create BLOG_KV
 ```
 
-命令执行成功后会返回 Namespace ID。使用本地 Worker 项目时，把它写入 `wrangler.toml`：
+如果项目使用 `wrangler.toml`，可以把返回的 Namespace ID 写入：
 
 ```toml
-name = "blog-config-api"
-main = "src/index.js"
-compatibility_date = "2026-08-25"
-
 [[kv_namespaces]]
 binding = "BLOG_KV"
 id = "替换为实际的 Namespace ID"
 ```
 
-绑定名称是代码里的 `env.BLOG_KV`，Namespace ID 是 Cloudflare 识别存储空间的 ID，两者不是一回事。
+其中 `binding` 对应代码里的 `env.BLOG_KV`，`id` 用于标识实际的存储空间。
 
-## 写入第一条数据
+## 在现有项目中绑定 KV
 
-先准备一份公开的网站配置：
+下面以现有项目为例，图中展示了 Worker 与 KV 的连接关系：
 
-```json
-{
-  "title": "我的 Cloudflare 博客",
-  "notice": "欢迎来到我的网站",
-  "theme": "light"
-}
+![Worker 绑定 Workers KV](./imgs/cf_worker_connect_kv.png)
+
+示例使用 key `10401`，实际操作时请替换成你创建的 key。
+
+在 `wrangler.jsonc` 中添加 KV namespace 绑定。绑定名称要与代码中的 `env.BLOG_KV`（或项目实际使用的名称）保持一致。
+
+配置完成后，重新生成 Worker 类型：
+
+```shell
+$ npm run cf-typegen
 ```
 
-可以直接在 KV Namespace 的数据页面新增一条记录：
+绑定完成后，回到上面的 Workers 部署流程登录并部署。若接口返回的数据不符合预期，优先检查 KV key、绑定名称、Cloudflare 账号和 Namespace 是否一致。
+
+## 写入和读取数据
+
+可以在 Namespace 的数据页面新增记录：
 
 ```text
 Key:   site-config
-Value: 上面的 JSON 内容
+Value: { "title": "我的博客", "notice": "欢迎来到我的网站" }
 ```
 
-也可以使用 Wrangler 写入：
+也可以使用 Wrangler：
 
 ```bash
 npx wrangler kv key put \
   --binding=BLOG_KV \
   "site-config" \
-  '{"title":"我的 Cloudflare 博客","notice":"欢迎来到我的网站","theme":"light"}'
+  '{"title":"我的博客","notice":"欢迎来到我的网站"}'
 ```
 
-如果 JSON 比较长，可以放在文件中：
-
-```bash
-npx wrangler kv key put \
-  --binding=BLOG_KV \
-  "site-config" \
-  --path=./site-config.json
-```
-
-KV 的 value 可以是普通文本，也可以是 JSON 字符串。Worker 读取时使用 `get(key, "json")`，Cloudflare 会帮我们解析成 JavaScript 对象。[读取 KV 数据](https://developers.cloudflare.com/kv/api/read-key-value-pairs/)
+value 可以是文本或 JSON 字符串。读取 JSON 时使用 `get(key, "json")`，Cloudflare 会将它解析为 JavaScript 对象。[读取 KV 数据](https://developers.cloudflare.com/kv/api/read-key-value-pairs/)
 
 ## 用 Worker 暴露一个读取接口
 
-前端不能直接使用 `env.BLOG_KV`，因为这个绑定只存在于 Worker 运行时。正确的链路是：
+`env.BLOG_KV` 只存在于 Worker 运行时，浏览器需要通过 Worker API 访问数据：
 
 ```text
-浏览器
-  ↓ fetch()
-Worker API
-  ↓ env.BLOG_KV.get()
-Workers KV
+浏览器 → Worker API → Workers KV
 ```
 
-在 Worker 编辑器中写入下面的代码：
+下面的 Worker 提供一个读取接口：
 
 ```js
-const ALLOWED_ORIGIN = "https://example.com"
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "https://example.com",
+}
 
-function responseJson(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json; charset=UTF-8",
-      "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  })
+function json(data, status = 200) {
+  return Response.json(data, { status, headers: corsHeaders })
 }
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url)
 
-    if (request.method === "OPTIONS") {
-      return new Response(null, {
-        status: 204,
-        headers: {
-          "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-          "Access-Control-Allow-Methods": "GET, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
-      })
-    }
-
     if (url.pathname !== "/api/site-config" || request.method !== "GET") {
-      return responseJson({ error: "Not found" }, 404)
+      return json({ error: "Not found" }, 404)
     }
 
     const config = await env.BLOG_KV.get("site-config", "json")
 
     if (config === null) {
-      return responseJson({ error: "Config not found" }, 404)
+      return json({ error: "Config not found" }, 404)
     }
 
-    return responseJson(config)
+    return json(config)
   },
 }
 ```
 
-这段代码做了四件事：
-
-1. 只处理 `GET /api/site-config`；
-2. 从 `BLOG_KV` 读取 `site-config`；
-3. 用 `"json"` 参数把 KV 中的 JSON 转成对象；
-4. 将对象作为 JSON 响应返回给浏览器。
-
-`OPTIONS` 请求是浏览器的 CORS 预检请求。前端和 Worker 使用不同域名时，浏览器可能先发这个请求；返回允许的方法和来源，正式的 `GET` 才能继续执行。
-
-示例中的 `ALLOWED_ORIGIN` 要替换成真正承载前端页面的地址。如果前端本身也运行在这个 Worker 的同一个域名下，可以不需要 CORS；如果只是临时本地开发，可以暂时改成：
-
-```js
-const ALLOWED_ORIGIN = "http://localhost:5173"
-```
-
-不要在生产环境随意写成 `*`，尤其是接口以后增加登录态或写操作时。允许的来源越宽，任何网站都可能尝试调用你的接口。
-
-## 部署 Worker
-
-在 Worker 编辑器中保存并部署后，会得到一个类似下面的访问地址：
-
-```text
-https://blog-config-api.<你的账号>.workers.dev
-```
-
-先直接访问接口测试：
+部署后，可以直接测试接口：
 
 ```bash
 curl https://blog-config-api.<你的账号>.workers.dev/api/site-config
 ```
 
-正常情况下会得到：
-
-```json
-{
-  "title": "我的 Cloudflare 博客",
-  "notice": "欢迎来到我的网站",
-  "theme": "light"
-}
-```
-
-如果返回 `Config not found`，先检查 key 是否准确写成 `site-config`，以及 Worker 绑定是否命名为 `BLOG_KV`。KV 的 key 区分大小写，`site-config` 和 `Site-Config` 是两个不同的 key。
-
-## 前端如何接入？
-
-前端只需要把 Worker 当成一个普通的 JSON API：
+前端把它当作普通 JSON API 即可：
 
 ```js
 async function loadSiteConfig() {
@@ -1466,51 +1420,13 @@ async function loadSiteConfig() {
 
   return response.json()
 }
-
-loadSiteConfig()
-  .then((config) => {
-    document.title = config.title
-    document.querySelector("#notice").textContent = config.notice
-  })
-  .catch((error) => {
-    console.error(error)
-  })
 ```
 
-页面准备一个容器：
-
-```html
-<p id="notice">正在加载公告...</p>
-```
-
-如果是 Vite 项目，可以把 Worker 地址放在环境变量中：
-
-```bash
-# .env.local
-VITE_CONFIG_API=https://blog-config-api.<你的账号>.workers.dev
-```
-
-代码中使用：
-
-```js
-const response = await fetch(
-  `${import.meta.env.VITE_CONFIG_API}/api/site-config`,
-)
-```
-
-环境变量只负责保存公开的 API 地址，不要把 Cloudflare API Token、KV REST API Token 或数据库密码放进去。以 `VITE_` 开头的变量会被打包进前端代码，任何访问网页的人都可以看到。
+示例中的 `https://example.com` 要替换为前端地址；同源部署时可以去掉 CORS 响应头。API 地址可以放在 Vite 等前端工具的环境变量中，但 Cloudflare API Token、数据库密码等秘密不能放入前端代码。
 
 ## 前端能不能直接写 KV？
 
-不建议，也不应该让浏览器直接携带 Cloudflare API Token 写 KV。
-
-如果前端代码中出现这样的内容：
-
-```js
-const token = "这里放 Cloudflare API Token"
-```
-
-这个 Token 等于公开给所有访问者，攻击者可以用它修改或删除你的 Namespace。正确的做法是：
+不能让浏览器携带 Cloudflare API Token 直接写 KV，否则任何访问者都能取得 Token。写操作应该经过带身份验证和权限校验的 Worker：
 
 ```text
 管理员后台 / CI
@@ -1520,38 +1436,16 @@ Worker
 Workers KV
 ```
 
-对于公开站点配置，写操作可以先使用 Cloudflare 控制台或 Wrangler；对于真正的管理后台，再为 Worker 增加登录校验、权限判断、输入校验和速率限制。前端可以请求“保存配置”的接口，但不能自己决定谁有权限写入。
+简单配置可以在控制台或通过 Wrangler 更新；管理后台则应在 Worker 中加入登录校验、权限判断、输入校验和速率限制。
 
-## KV 的几个使用细节
+## 使用建议
 
-### 读和写是两个不同的节奏
+- key 应按用途设计，例如 `site-config`、`feature:checkout`、`user-preference:10001`；
+- 不要把密码、支付信息等敏感数据暴露在公开 API 中；
+- 文本和 JSON 适合放在 KV，大文件放 R2，关系型数据放 D1；
+- 开发和生产应使用不同的 Namespace，避免测试覆盖线上数据。
 
-KV 适合少量写入、大量读取。例如网站公告每天更新几次，几十万次访问都只是读取 `site-config`。如果每个用户点击一次按钮都去修改同一个 key，KV 就不适合做这个计数器。
-
-### key 设计要有规律
-
-不要把所有内容都塞进一个越来越大的 JSON。可以按用途拆分：
-
-```text
-site-config
-feature:checkout
-user-preference:10001
-cache:weather:beijing
-```
-
-这样读取和失效都更容易控制。用户偏好这类数据还要考虑隐私，不要把密码、支付信息或完整身份资料直接存成公开 API 可以读取的内容。
-
-### value 不是文件存储
-
-KV 单个 value 有大小限制，适合文本和 JSON，不适合拿来存图片、视频和压缩包。大文件放 R2，结构化数据放 D1，KV 只保存轻量的配置或索引。
-
-### 本地开发和线上 Namespace
-
-本地 `wrangler dev` 可以使用本地 KV，也可以配置远程 Namespace。开发和生产最好使用不同的 Namespace，避免本地测试覆盖线上数据。无论使用控制台还是 Wrangler，都要确认当前操作的环境和 Namespace 名称。
-
-## 这一节完成后的状态
-
-完成后，应该能画出这条链路：
+整个读取链路如下：
 
 ```text
 浏览器
@@ -1565,7 +1459,8 @@ Worker 返回响应
 前端页面更新内容
 ```
 
-Workers KV 的核心不是“把数据库搬到前端”，而是让 Worker 在 Cloudflare 网络中读取一份适合全球分发的键值数据。浏览器始终通过 Worker 访问它，权限、CORS、缓存和业务校验都留在服务端。
+Workers KV 的核心是让 Worker 读取适合全球分发的键值数据。浏览器通过 Worker 访问它，权限和业务校验仍留在服务端。
+
 
 # Cloudflare Tunnel
 
@@ -1585,16 +1480,18 @@ http://localhost:5173
 
 Telegram 正式环境要求 Mini App 使用 [HTTPS URL ↪](https://core.telegram.org/bots/api#webappinfo)。Telegram 测试环境虽然允许使用 HTTP，但需要单独创建测试账号和 Bot，因此在日常真机联调中，使用 Cloudflare Tunnel 通常更方便。
 
-## Quick Tunnel 与 Named Tunnel
+## Quick Tunnel & Named Tunnel
 
 Cloudflare Tunnel 主要有两种使用方式：
 
-- **Quick Tunnel**：无需 Cloudflare 账号和域名，执行一条命令即可获得随机的 `trycloudflare.com` HTTPS 地址，适合本地开发和临时测试。
-- **Named Tunnel**：需要 Cloudflare 账号和已接入 Cloudflare 的域名，可以绑定固定地址，例如 `miniapp-dev.example.com`，适合长期开发或部署。
+- Quick Tunnel：无需 Cloudflare 账号和域名，执行一条命令即可获得随机的 `trycloudflare.com` HTTPS 地址，适合本地开发和临时测试。
+- Named Tunnel：需要 Cloudflare 账号和已接入 Cloudflare 的域名，可以绑定固定地址，例如 `miniapp-dev.example.com`，适合长期开发或部署。
 
 本地调试优先使用免费的 [Quick Tunnel ↪](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/)。它不提供可用性保证，每次重新启动都可能生成新地址，并且存在 200 个并发请求、不支持 SSE 等限制，但这些通常不会影响个人开发。Vite 热更新主要使用 WebSocket，而 Cloudflare 支持代理 WebSocket。
 
-## macOS + Vite + React 本地开发指南
+## 实战
+
+> macOS + Vite + React 本地开发指南
 
 下面使用 VS Code 的两个终端，分别运行 Vite 和 Cloudflare Tunnel。
 
@@ -1620,7 +1517,11 @@ $ cloudflared --version
 $ pnpm run dev
 ```
 
-Vite 默认使用 `http://localhost:5173`。如果终端显示的是其他端口，后续命令也要改为实际端口。`cloudflared` 与 Vite 运行在同一台 Mac 上，因此这里通常不需要额外配置 `--host 0.0.0.0`。
+Vite 默认使用 `http://localhost:5173`。
+
+如果终端显示的是其他端口，后续命令也要改为实际端口。
+
+`cloudflared` 与 Vite 运行在同一台 Mac 上，因此这里通常不需要额外配置 `--host 0.0.0.0`。
 
 ### 3. 创建 HTTPS 隧道
 
