@@ -1,13 +1,13 @@
 
 
-# Firebase
+# 概述
 
 Firebase 是一个应用开发平台，可帮助您构建和拓展用户喜爱的应用和游戏。Firebase 由 Google 提供支持，深受全球数百万企业的信任。
 
 - 官网地址：[点击前往 >>](https://firebase.google.com/?hl=zh-cn)
-- 官方文档：[点击前往 >>](https://firebase.google.com/docs?hl=zh-cn)
+- 开发文档：[点击前往 ↪](https://firebase.google.com/docs?hl=zh-cn)
 
-## Authentication
+# Authentication
 
 集成三方（Google / Facebook）登录的大致流程如下：
 
@@ -16,9 +16,9 @@ Firebase 是一个应用开发平台，可帮助您构建和拓展用户喜爱�
 3. 左侧菜单栏：构建 → Authentication → Sign-in method → 添加提供方（ Google / Facebook）
 4. 集成 SDK 并使用
 
-### 配置提供方
+## 配置提供方
 
-#### Google
+### Google
 
 [参考指南 >>](https://firebase.google.com/docs/auth/web/google-signin?hl=zh&authuser=0)
 
@@ -51,7 +51,7 @@ Firebase 是一个应用开发平台，可帮助您构建和拓展用户喜爱�
 
 - JavaScript SDK：https://accounts.google.com/gsi/client
 
-#### Facebook
+### Facebook
 
 [参考指南 >>](https://firebase.google.com/docs/auth/web/facebook-login?hl=zh&authuser=0)
 
@@ -75,9 +75,9 @@ Firebase 是一个应用开发平台，可帮助您构建和拓展用户喜爱�
 
 - https://developers.facebook.com/docs/facebook-login/web
 
-### 集成及使用
+## 集成及使用
 
-#### 集成
+### 集成
 
 1. install SDK
 
@@ -105,11 +105,11 @@ initializeApp({
 
 > 配置代码位置： 「Firebase」 → 「指定项目」 → 「指定应用」→ 「设置-常规-web应用」
 
-#### 使用
+### 使用
 
 提示：页面触发按钮自行布局。
 
-##### Google
+#### Google
 
 ```typescript
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
@@ -137,7 +137,7 @@ const loginWithGoogle = () => {
 
 
 
-##### Facebook
+#### Facebook
 
 ```typescript
 import { getAuth, FacebookAuthProvider, signInWithPopup } from 'firebase/auth';
@@ -162,7 +162,7 @@ const loginWithFacebook = () => {
 };
 ```
 
-## Google Analytics
+# Google Analytics
 
 [Google Analytics](https://analytics.google.com/analytics/web) 是一种免费的应用衡量解决方案，可提供有关应用使用情况和用户参与度的洞察。
 
@@ -210,3 +210,15 @@ export default Utils;
 当你需要统计事件时，直接调用：*`Utils.googleAnalytics(eventName, eventParams)`* 函数即可。
 
 调试事件参考 [这里 >>](https://firebase.google.com/docs/analytics/debugview?hl=zh#web)
+
+# Cloud Messaging
+
+**消息分为两种**
+
+| 类型       | 用途                 | 处理方式                                  |
+| ---------- | -------------------- | ----------------------------------------- |
+| Foreground | 用户正在打开网站     | React 监听 `onMessage`                    |
+| Background | 网站在后台或关闭页面 | Service Worker 处理 `onBackgroundMessage` |
+
+建议两种都支持。否则用户打开网站时推送体验会不完整。
+
