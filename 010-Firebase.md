@@ -4,7 +4,7 @@
 
 Firebase 是一个应用开发平台，可帮助您构建和拓展用户喜爱的应用和游戏。Firebase 由 Google 提供支持，深受全球数百万企业的信任。
 
-- 官网地址：[点击前往 >>](https://firebase.google.com/?hl=zh-cn)
+- 官网地址：[点击前往 ↪](https://firebase.google.com/?hl=zh-cn)
 - 开发文档：[点击前往 ↪](https://firebase.google.com/docs?hl=zh-cn)
 
 # Authentication
@@ -20,9 +20,9 @@ Firebase 是一个应用开发平台，可帮助您构建和拓展用户喜爱�
 
 ### Google
 
-[参考指南 >>](https://firebase.google.com/docs/auth/web/google-signin?hl=zh&authuser=0)
+[参考指南 ↪](https://firebase.google.com/docs/auth/web/google-signin?hl=zh&authuser=0)
 
-1. 创建 Google 应用 [点击前往 >>](https://console.cloud.google.com/)
+1. 创建 Google 应用 [点击前往 ↪](https://console.cloud.google.com/)
 
 2. 点击左上角导航菜单 → 选择「API和服务」
 
@@ -53,7 +53,7 @@ Firebase 是一个应用开发平台，可帮助您构建和拓展用户喜爱�
 
 ### Facebook
 
-[参考指南 >>](https://firebase.google.com/docs/auth/web/facebook-login?hl=zh&authuser=0)
+[参考指南 ↪](https://firebase.google.com/docs/auth/web/facebook-login?hl=zh&authuser=0)
 
 1. 在 [Facebook for Developers](https://developers.facebook.com/) 上开通开发者账号
 2. 创建应用
@@ -213,6 +213,32 @@ export default Utils;
 
 # Cloud Messaging
 
+[参考指南 ↪](https://firebase.google.com/docs/cloud-messaging/?hl=zh-CN)
+
+Firebase Cloud Messaging (FCM) 是一种跨平台消息传递解决方案，可供您可靠地发送消息。
+
+责任区分：
+
+```markdown
+# 前端
+- Firebase Web SDK 初始化
+- Notification 权限管理
+- Service Worker 注册
+- FCM Token 获取和更新
+- Token 上报后端
+- 前台消息监听
+- 通知点击跳转
+- 用户取消订阅
+
+# 后端
+- 用户身份与设备绑定
+- Token 存储
+- Token 失效管理
+- Firebase Admin / FCM HTTP v1
+- 发送通知
+- 消息记录、重试和业务逻辑
+```
+
 **消息分为两种**
 
 | 类型       | 用途                 | 处理方式                                  |
@@ -221,4 +247,20 @@ export default Utils;
 | Background | 网站在后台或关闭页面 | Service Worker 处理 `onBackgroundMessage` |
 
 建议两种都支持。否则用户打开网站时推送体验会不完整。
+
+## Firebase Console 配置
+
+**Step 1：创建 Firebase 项目**
+
+[Firebase Console ↪](https://console.firebase.google.com/)
+
+创建项目后：
+
+1. 添加 Web App（`</>`）。
+2. 记录 Firebase Web 配置。
+3. 打开 Project Settings。
+4. 进入 Cloud Messaging。
+5. 在 Web Push certificates 中生成 VAPID Key。
+
+
 
